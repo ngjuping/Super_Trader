@@ -1,0 +1,10 @@
+{
+  "seed": 7,
+  "reps": 3,
+  "symbols": 62,
+  "tests": 68685,
+  "train_pass": 2134,
+  "promoted": 251,
+  "train_rate": 0.031069374681517072,
+  "promoted_rate": 0.003654364126082842
+}

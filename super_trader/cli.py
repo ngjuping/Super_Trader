@@ -1,0 +1,145 @@
+"""命令行入口：scan / report / predict / check / rules / placebo。"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+from .config import Config
+
+
+def _load_cfg(args) -> Config:
+    cfg = Config.load(args.config)
+    if getattr(args, "data_root", None):
+        cfg = cfg.merged({"data_root": args.data_root})
+    if getattr(args, "report_dir", None):
+        cfg = cfg.merged({"report_dir": args.report_dir})
+    return cfg
+
+
+def cmd_scan(args) -> int:
+    from .scan import run_scan
+
+    cfg = _load_cfg(args)
+    outcome = run_scan(
+        cfg,
+        pool=args.pool,
+        top=args.top,
+        out_name=args.name,
+        limit=args.limit,
+        verbose=not args.quiet,
+    )
+    if not args.no_report:
+        from .report import build_reports
+
+        paths = build_reports(outcome.payload, outcome.out_dir)
+        print("报告：")
+        for p in paths:
+            print(f"  {p}")
+    return 0
+
+
+def cmd_report(args) -> int:
+    from .report import build_reports
+
+    cfg = _load_cfg(args)
+    name = args.name or cfg.scan_name
+    out_dir = cfg.report_path / name
+    res = out_dir / "results.json"
+    if not res.exists():
+        print(f"找不到 {res}，请先运行 scan", file=sys.stderr)
+        return 2
+    payload = json.loads(res.read_text(encoding="utf-8"))
+    for p in build_reports(payload, out_dir):
+        print(p)
+    return 0
+
+
+def cmd_predict(args) -> int:
+    from .predict import predict_today
+
+    cfg = _load_cfg(args)
+    return predict_today(cfg, args.name, only=args.symbol, top=args.top)
+
+
+def cmd_check(args) -> int:
+    from .diagnose import data_check
+
+    cfg = _load_cfg(args)
+    return data_check(cfg)
+
+
+def cmd_rules(args) -> int:
+    from .rules import RULES
+
+    rows = sorted(RULES, key=lambda r: (r.family, r.name))
+    print(f"共 {len(rows)} 条规则\n")
+    fam = None
+    for r in rows:
+        if r.family != fam:
+            fam = r.family
+            print(f"【{fam}】")
+        print(f"  {r.name:<26s} {r.desc}")
+    return 0
+
+
+def cmd_placebo(args) -> int:
+    from .diagnose import placebo_test
+
+    cfg = _load_cfg(args)
+    return placebo_test(cfg, n_symbols=args.symbols, seed=args.seed, reps=args.reps)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="super-trader",
+        description="A 股日线「未来涨跌」量化规律挖掘（研究工具，不构成投资建议）",
+    )
+    p.add_argument("--config", default=None, help="配置文件路径（默认 config.json）")
+    p.add_argument("--data-root", default=None, help="覆盖日线数据目录")
+    p.add_argument("--report-dir", default=None, help="覆盖报告输出目录")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    s = sub.add_parser("scan", help="跑规则库扫描并生成报告")
+    s.add_argument("--pool", default="mainstream",
+                   help="标的池：mainstream / 宽基 / 行业 / ETF / 龙头 / auto")
+    s.add_argument("--top", type=int, default=None, help="auto 池取前 N 个")
+    s.add_argument("--limit", type=int, default=None, help="只跑前 N 个标的（调试用）")
+    s.add_argument("--name", default=None, help="本次扫描名（输出目录名）")
+    s.add_argument("--quiet", action="store_true")
+    s.add_argument("--no-report", action="store_true", help="只出数据，不生成 HTML")
+    s.set_defaults(func=cmd_scan)
+
+    r = sub.add_parser("report", help="用已有 results.json 重新生成报告")
+    r.add_argument("--name", default=None)
+    r.set_defaults(func=cmd_report)
+
+    d = sub.add_parser("predict", help="打印每个标的最新规则信号（今日怎么看）")
+    d.add_argument("--name", default=None)
+    d.add_argument("--symbol", default=None, help="只看某个代码/名称")
+    d.add_argument("--top", type=int, default=30, help="最多显示 N 个标的")
+    d.set_defaults(func=cmd_predict)
+
+    c = sub.add_parser("check", help="数据体检：行数、时间范围、除权跳变、停牌缺口")
+    c.set_defaults(func=cmd_check)
+
+    ru = sub.add_parser("rules", help="列出规则库")
+    ru.set_defaults(func=cmd_rules)
+
+    pl = sub.add_parser("placebo", help="安慰剂检验：打乱收益标签后看还剩多少『规律』")
+    pl.add_argument("--symbols", type=int, default=0, help="用前 N 个标的（0=全部）")
+    pl.add_argument("--reps", type=int, default=3, help="重复轮数")
+    pl.add_argument("--seed", type=int, default=7)
+    pl.set_defaults(func=cmd_placebo)
+
+    return p
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    return int(args.func(args) or 0)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

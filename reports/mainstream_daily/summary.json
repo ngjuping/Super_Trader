@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-11-05 23:08:45",
+  "market_date": "2026-11-05",
+  "pool": "mainstream",
+  "gate": {
+    "eval_start": "2005-01-01",
+    "train_fraction": 0.6,
+    "train_p_max": 0.1,
+    "holdout_p_max": 0.05,
+    "min_train_samples": 60,
+    "min_holdout_samples": 30,
+    "fdr_q": 0.1,
+    "overlap_adjust": true
+  },
+  "totals": {
+    "symbols_requested": 62,
+    "symbols_evaluated": 62,
+    "tests": 22895,
+    "rules": 78,
+    "train_pass": 1483,
+    "expected_false_holdout": 74.15,
+    "promoted": 122,
+    "promoted_over_expected": 1.645313553607552,
+    "fdr_pass": 193,
+    "tier_a_rules": 5,
+    "elapsed_sec": 59.8
+  }
+}

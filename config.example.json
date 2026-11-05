@@ -1,0 +1,18 @@
+{
+  "data_root": "D:\\A股k线数据\\多周期\\日线",
+  "cache_dir": "data/cache",
+  "report_dir": "reports",
+  "timeframe": "日线",
+  "horizons": [1, 3, 5, 10, 20],
+  "min_bars": 1000,
+  "warmup_bars": 120,
+  "train_fraction": 0.6,
+  "min_train_samples": 60,
+  "min_holdout_samples": 30,
+  "train_p_max": 0.10,
+  "holdout_p_max": 0.05,
+  "fdr_q": 0.10,
+  "overlap_adjust": true,
+  "eval_start": "2005-01-01",
+  "era_starts": ["2005-01-01", "2010-01-01", "2015-01-01", "2020-01-01", "2025-01-01"]
+}

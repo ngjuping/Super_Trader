@@ -1,0 +1,32 @@
+# ---------------- Python ----------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---------------- 虚拟环境 ----------------
+.venv/
+venv/
+env/
+
+# ---------------- 数据缓存（体积大，可由数据源重建，不入库） ----------------
+data/cache/
+data/*.parquet
+data/*.json
+
+# ---------------- 扫描全量证据表（30MB，可由 scan 重新生成；报告里已内嵌汇总） ----------------
+reports/**/results.json
+reports/**/*.parquet
+
+# ---------------- 本地配置（含本机数据路径） ----------------
+config.json
+
+# ---------------- 临时文件 ----------------
+*.tmp
+*.bak
+_thumbs/
+~$*
