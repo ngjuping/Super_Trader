@@ -84,6 +84,18 @@ def cmd_rules(args) -> int:
     return 0
 
 
+def cmd_personalize(args) -> int:
+    from .personal_report import build_personal_report
+    from .personalize import run_personalize
+
+    cfg = _load_cfg(args)
+    payload = run_personalize(cfg, pool=args.pool, reps=args.reps, seed=args.seed)
+    out_dir = cfg.report_path / "personalized"
+    for p in build_personal_report(payload, out_dir):
+        print(f"  {p}")
+    return 0
+
+
 def cmd_placebo(args) -> int:
     from .diagnose import placebo_test
 
@@ -132,6 +144,12 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--reps", type=int, default=3, help="重复轮数")
     pl.add_argument("--seed", type=int, default=7)
     pl.set_defaults(func=cmd_placebo)
+
+    per = sub.add_parser("personalize", help="个性化规则：每个标的各选各的规则（4 段复现验证）")
+    per.add_argument("--pool", default="mainstream")
+    per.add_argument("--reps", type=int, default=2, help="安慰剂重复轮数")
+    per.add_argument("--seed", type=int, default=17)
+    per.set_defaults(func=cmd_personalize)
 
     return p
 

@@ -18,8 +18,9 @@ data/cache/
 data/*.parquet
 data/*.json
 
-# ---------------- 扫描全量证据表（30MB，可由 scan 重新生成；报告里已内嵌汇总） ----------------
+# ---------------- 扫描全量证据表（20~30MB，可由 scan/personalize 重新生成；报告里已内嵌汇总） ----------------
 reports/**/results.json
+reports/**/personalized.json
 reports/**/*.parquet
 
 # ---------------- 本地配置（含本机数据路径） ----------------
