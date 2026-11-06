@@ -97,16 +97,10 @@ def cmd_personalize(args) -> int:
 
 
 def cmd_accuracy(args) -> int:
-    from .accuracy import AccuracyConfig, AdaptiveConfig, run_accuracy
+    from .accuracy import AccuracyConfig, run_accuracy
     config = AccuracyConfig(min_fit_signals=args.min_fit_signals,
                             min_calibration_predictions=args.min_calibration_predictions)
-    adaptive = None
-    if args.mode == "adaptive":
-        adaptive = AdaptiveConfig(blocks=args.blocks, trailing=args.trailing,
-                                  health_min_acc=args.health_min_acc,
-                                  drift_weight=args.drift_weight)
-    run_accuracy(_load_cfg(args), pool=args.pool, config=config, limit=args.limit,
-                 adaptive=adaptive)
+    run_accuracy(_load_cfg(args), pool=args.pool, config=config, limit=args.limit)
     return 0
 
 
@@ -196,13 +190,6 @@ def build_parser() -> argparse.ArgumentParser:
     acc.add_argument("--limit", type=int, default=None)
     acc.add_argument("--min-fit-signals", type=int, default=60)
     acc.add_argument("--min-calibration-predictions", type=int, default=30)
-    acc.add_argument("--mode", choices=["frozen", "adaptive"], default="frozen",
-                     help="frozen=一套冻结参数；adaptive=测试期滚动再校准+漂移修正+健康闸门")
-    acc.add_argument("--blocks", type=int, default=8, help="adaptive 模式下测试段重估块数")
-    acc.add_argument("--trailing", type=int, default=500, help="每次重估使用的最近样本数")
-    acc.add_argument("--health-min-acc", type=float, default=0.5,
-                     help="最近若干块实测低于此值时转为中性")
-    acc.add_argument("--drift-weight", type=float, default=1.0, help="无条件涨率修正强度")
     acc.set_defaults(func=cmd_accuracy)
 
     rank = sub.add_parser("ranking", help="按标的历史预测准确率生成排行 HTML（中性不计入分母）")
