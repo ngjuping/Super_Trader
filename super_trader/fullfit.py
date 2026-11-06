@@ -19,6 +19,7 @@ from datetime import datetime
 import json
 import math
 from pathlib import Path
+import os
 
 import numpy as np
 
@@ -201,8 +202,52 @@ def fit_symbol(p: PreparedSymbol, config: FullFitConfig) -> dict:
     return best
 
 
+# ------------------------------------------------------------------ 并行跑全市场
+_STORE = None   # 每个进程初始化一次，避免反复打开缓存
+_CFG = None
+
+
+def _worker_init(cfg_dict: dict) -> None:
+    global _STORE, _CFG
+    _CFG = Config(**cfg_dict)
+    _STORE = KlineStore(_CFG.data_path, _CFG.cache_path)
+
+
+def _worker_task(item) -> dict | None:
+    info, config_dict = item
+    if _STORE is None:
+        raise RuntimeError('worker 未初始化')
+    df = _STORE.load(info)
+    if len(df) < _CFG.min_bars:
+        return None
+    from .scan import eval_config
+
+    p = prepare_symbol(df, info, eval_config(_CFG))
+    if p is None:
+        return None
+    return fit_symbol(p, FullFitConfig(**config_dict))
+
+
+def _all_members(store) -> list:
+    """全市场：直接遍历数据目录里的全部标的。"""
+    from .data import SymbolInfo
+
+    cat = store.catalog()
+    out = []
+    # 按文件体积从大到小：历史长的先跑，进度更有参考性
+    order = cat.sort_values('size', ascending=False) if 'size' in cat else cat
+    for _, row in order.iterrows():
+        out.append((
+            SymbolInfo(code=str(row['code']), name=str(row['name']),
+                       category=str(row['category']), path=str(row['path']),
+                       board=str(row['board']), price_limit=float(row['price_limit'])),
+            'all'))
+    return out
+
+
 def run_fullfit(cfg: Config | None = None, pool: str = 'mainstream',
-                config: FullFitConfig | None = None, limit: int | None = None) -> dict:
+                config: FullFitConfig | None = None, limit: int | None = None,
+                workers: int = 1, progress_path: str | None = None) -> dict:
     from .scan import eval_config
     from .universe import resolve_pool
 
@@ -210,23 +255,50 @@ def run_fullfit(cfg: Config | None = None, pool: str = 'mainstream',
     config = config or FullFitConfig()
     cfg.ensure_dirs()
     store = KlineStore(cfg.data_path, cfg.cache_path)
-    members = resolve_pool(store, pool)
+    members = (_all_members(store) if pool == 'all' else resolve_pool(store, pool))
     if limit is not None:
         members = members[:limit]
     rows = []
-    for i, (info, _tag) in enumerate(members, 1):
-        df = store.load(info)
-        if len(df) < cfg.min_bars:
-            continue
-        p = prepare_symbol(df, info, eval_config(cfg))
-        if p is None:
-            continue
-        row = fit_symbol(p, config)
-        if row:
-            rows.append(row)
-        print(f'[{i}/{len(members)}] {info.code} {info.name}'
-              + (f"  {row['weighted_accuracy']*100:.2f}% n={row['predictions']}" if row else '  —'),
-              flush=True)
+    if pool == 'all':
+        total = len(members)
+        config_dict = asdict(config)
+        items = [(info, config_dict) for info, _tag in members]
+        if workers <= 1:
+            _worker_init(asdict(cfg))
+            iterator = map(_worker_task, items)
+        else:
+            from multiprocessing import Pool
+
+            pool_obj = Pool(processes=workers, initializer=_worker_init,
+                            initargs=(asdict(cfg),))
+            iterator = pool_obj.imap_unordered(_worker_task, items, chunksize=8)
+        done = 0
+        for row in iterator:
+            done += 1
+            if row:
+                rows.append(row)
+            if done % 100 == 0 or done == total:
+                msg = f'[{done}/{total}] 已收录 {len(rows)}'
+                print(msg, flush=True)
+                if progress_path:
+                    Path(progress_path).write_text(msg, encoding='utf-8')
+        if workers > 1:
+            pool_obj.close()
+            pool_obj.join()
+    else:
+        for i, (info, _tag) in enumerate(members, 1):
+            df = store.load(info)
+            if len(df) < cfg.min_bars:
+                continue
+            p = prepare_symbol(df, info, eval_config(cfg))
+            if p is None:
+                continue
+            row = fit_symbol(p, config)
+            if row:
+                rows.append(row)
+            print(f'[{i}/{len(members)}] {info.code} {info.name}'
+                  + (f"  {row['weighted_accuracy']*100:.2f}% n={row['predictions']}" if row else '  —'),
+                  flush=True)
 
     rows.sort(key=lambda r: (-(r['weighted_accuracy'] or 0), -r['predictions']))
     for rank, row in enumerate(rows, 1):

@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 
 from .config import Config
+from dataclasses import asdict
+from datetime import datetime
 
 
 def _load_cfg(args) -> Config:
@@ -112,9 +114,37 @@ def cmd_fullfit(args) -> int:
     config = FullFitConfig(half_life_days=args.half_life, target_accuracy=args.target,
                            max_rules=args.max_rules, min_eff_n=args.min_eff_n,
                            weight_floor=args.weight_floor, min_coverage=args.min_coverage)
-    payload = run_fullfit(cfg, pool=args.pool, config=config, limit=args.limit)
+    payload = run_fullfit(cfg, pool=args.pool, config=config, limit=args.limit,
+                          workers=args.workers,
+                          progress_path=str(cfg.report_path / "fullfit" / "progress.txt"))
     out = build_fullfit_html(payload, cfg.report_path / "fullfit" / "ranking_fullfit.html")
     print(out)
+    return 0
+
+
+def cmd_crosssection(args) -> int:
+    from .crosssection import XSConfig, evaluate, load_panel
+    from .crosssection_report import build_xs_html
+
+    cfg = _load_cfg(args)
+    config = XSConfig(start=args.start, horizons=tuple(args.horizons),
+                      lookbacks=tuple(args.lookbacks))
+    out_dir = cfg.report_path / "crosssection"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    print(f"读取面板（{args.start} 起，最少 {config.min_bars} 根）…", flush=True)
+    panel, meta = load_panel(cfg, config, cache=out_dir / "panel.parquet")
+    print(f"面板 {panel.shape[0]} 交易日 × {panel.shape[1]} 标的", flush=True)
+    results = evaluate(panel, meta, config)
+    payload = {"generated_at": datetime.now().isoformat(timespec="seconds"),
+               "method": "cross_section_rs_v1", "config": asdict(config),
+               "results": results}
+    (out_dir / "crosssection.json").write_text(
+        json.dumps(payload, ensure_ascii=False, default=str, indent=2),
+        encoding="utf-8", newline="\n")
+    print(build_xs_html(payload, out_dir / "report_crosssection.html"))
+    for r in results["ic"]:
+        print(f"  {r['feature']:<8s} H{r['horizon']:<2d} IC={r['ic_mean']:+.4f} "
+              f"t={r['ic_t']:+.2f} 天数={r['days']}", flush=True)
     return 0
 
 
@@ -192,6 +222,12 @@ def build_parser() -> argparse.ArgumentParser:
     acc.add_argument("--min-calibration-predictions", type=int, default=30)
     acc.set_defaults(func=cmd_accuracy)
 
+    xs = sub.add_parser("xs", help="横截面：相对强弱/行业轮动 IC 检验")
+    xs.add_argument("--start", default="2015-01-01")
+    xs.add_argument("--horizons", type=int, nargs="+", default=[1, 5, 20])
+    xs.add_argument("--lookbacks", type=int, nargs="+", default=[5, 20, 60])
+    xs.set_defaults(func=cmd_crosssection)
+
     rank = sub.add_parser("ranking", help="按标的历史预测准确率生成排行 HTML（中性不计入分母）")
     rank.set_defaults(func=cmd_ranking)
 
@@ -204,6 +240,7 @@ def build_parser() -> argparse.ArgumentParser:
     ff.add_argument("--min-eff-n", type=float, default=30.0, help="有效样本量下限")
     ff.add_argument("--target", type=float, default=0.55)
     ff.add_argument("--max-rules", type=int, default=5)
+    ff.add_argument("--workers", type=int, default=1, help="并行进程数（全市场建议 8）")
     ff.set_defaults(func=cmd_fullfit)
 
     return p
