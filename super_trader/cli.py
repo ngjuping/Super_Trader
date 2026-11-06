@@ -200,7 +200,7 @@ def build_parser() -> argparse.ArgumentParser:
     ff.add_argument("--limit", type=int, default=None)
     ff.add_argument("--half-life", type=float, default=365.0, help="权重半衰期（天）")
     ff.add_argument("--weight-floor", type=float, default=0.10, help="老数据权重下限")
-    ff.add_argument("--min-coverage", type=float, default=0.05, help="集成最低覆盖率")
+    ff.add_argument("--min-coverage", type=float, default=0.10, help="集成最低覆盖率")
     ff.add_argument("--min-eff-n", type=float, default=30.0, help="有效样本量下限")
     ff.add_argument("--target", type=float, default=0.55)
     ff.add_argument("--max-rules", type=int, default=5)
