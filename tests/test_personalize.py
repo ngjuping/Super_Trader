@@ -100,6 +100,78 @@ def test_fold_gate_rejects_when_one_fold_flips():
     assert not t2["validated"]
 
 
+def test_purge_uses_original_bars_not_valid_row_count():
+    bars = np.array([0, 1, 2, 50, 51, 52, 100, 101])
+    blocks = _fold_blocks(np.arange(8), 2, gap=3, bar_idx=bars)
+    assert blocks[0].tolist() == [0, 1, 2]
+    assert bars[blocks[0][-1]] + 3 < bars[blocks[1][0]]
+
+
+def test_daily_score_handles_long_short_and_horizon_units():
+    from super_trader.personalize import _daily_score
+    assert _daily_score(np.array([1, 1]), np.array([.06, .04]), .01, 5) == pytest.approx(.008)
+    assert _daily_score(np.array([-1, -1]), np.array([-.02, -.04]), .01, 5) == pytest.approx(.008)
+    assert _daily_score(np.array([1, -1]), np.array([.05, -.03]), .01, 5) == pytest.approx(.008)
+
+
+def test_horizon_choice_cannot_see_holdout_labels_or_returns():
+    p = _prep(_planted_df())
+    first = evaluate_symbol_personal(p, EvalConfig())
+    for h in EvalConfig().horizons:
+        idx, f, fo, up = p.masks(h)
+        f, up = f.copy(), up.copy()
+        m = idx >= p.split_idx
+        f[m] = -f[m] * 100
+        up[m] = ~up[m]
+        p._mask_cache[h] = idx, f, fo, up
+    second = evaluate_symbol_personal(p, EvalConfig())
+    a = {(r['rule'], r['horizon']): (r['horizon_chosen'], r['daily_train'], r['p_train']) for r in first}
+    b = {(r['rule'], r['horizon']): (r['horizon_chosen'], r['daily_train'], r['p_train']) for r in second}
+    assert a.keys() == b.keys()
+    for key in a:
+        assert a[key][0] == b[key][0]
+        np.testing.assert_allclose(a[key][1:], b[key][1:], equal_nan=True)
+    assert all(sum(r['horizon_chosen'] for r in first if r['rule'] == rule) <= 1
+               for rule in {r['rule'] for r in first})
+
+
+def test_long_horizon_can_win_training_choice_despite_lower_power(monkeypatch):
+    from types import SimpleNamespace
+    import super_trader.personalize as module
+    p = _prep(_planted_df())
+    sig = (np.arange(p.n) % 2 == 0).astype(np.int8)
+    p.sigs = {'test_rule': sig}
+    monkeypatch.setattr(module, 'RULES', [SimpleNamespace(key='test_rule', family='test', desc='test')])
+    for h, effect in [(1, .001), (20, .1)]:
+        idx = np.arange(120, p.n - 20)
+        fwd = np.where(sig[idx] > 0, effect, -.001)
+        p._mask_cache[h] = idx, fwd, fwd.copy(), fwd > 0
+    records = evaluate_symbol_personal(p, EvalConfig(horizons=[1, 20]))
+    chosen = [r['horizon'] for r in records if r['horizon_chosen']]
+    assert chosen == [20]
+
+
+def test_primary_rule_ranking_uses_training_not_holdout():
+    df = pd.DataFrame([
+        {'code': 'A', 'rule': 'train_best', 'daily_train': .02, 'edge_hold': .01},
+        {'code': 'A', 'rule': 'holdout_best', 'daily_train': .001, 'edge_hold': .5},
+    ])
+    assert best_per_symbol(df).iloc[0]['rule'] == 'train_best'
+
+
+def test_personal_report_exposes_power_and_research_limitations(tmp_path):
+    from super_trader.personal_report import build_personal_report
+    payload = {'horizon_diagnostics': [
+        {'horizon': 20, 'tests': 10, 'chosen_train': 3, 'validated': 0,
+         'median_n_hold': 200, 'median_n_eff': 10, 'median_mdes': .26, 'power_limited': 8}],
+        'totals': {}, 'gate': {}}
+    paths = build_personal_report(payload, tmp_path)
+    text = paths[0].read_text(encoding='utf-8')
+    assert 'H20' in text and '26.00' in text
+    assert '不是严格假发现率' in text
+    assert '80%功效' in text
+
+
 def test_gain_columns_semantics():
     df = pd.DataFrame([
         {"code": "A", "rule": "r1", "horizon": 1, "edge_hold": 0.10, "validated": True},

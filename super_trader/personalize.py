@@ -1,24 +1,8 @@
-"""个性化规则：每个标的、每个周期，各自选自己的规律。
+"""按标的研究规则与持有周期，结果属于探索性候选。
 
-为什么需要单独一层
-------------------
-市场级检验问的是「这条规律是不是全市场通用」。但不同标的的性格确实不同：
-银行股多是低波动均值回归，资源股是趋势跟随，小盘成长股是情绪脉冲。
-把它们硬塞进一条统一规则，等于先假设了个性化不存在——这正是第一轮的缺陷所在。
-
-问题不在于「个性化有没有意义」，而在于「怎么证明它不是拟合出来的」。
-78 条规则 × 5 个周期 = 390 个假设 / 标的，如果只做一次 60/40 切分，
-光靠运气就会有一批规则「晋级」。第一轮的安慰剂已经证明了这一点。
-
-所以这一层的核心不是模型，而是**验证方式**：
-
-1. 训练段选规则（前 60%，门槛 p≤0.10，方向为正）。
-2. 留出段切成 K=4 个**互不重叠**的时间块，规则必须在**每一块**都同向为正，
-   且每块样本量 ≥20。任何一块翻向就淘汰——这 4 块是 4 次独立复现。
-3. 留出段整体再算一次重叠修正后的 p 值（≤0.05）与优势（>0.5pp）。
-4. 用同样的流程跑随机标签，得到经验假阳性率；只有真实数远高于安慰剂才认账。
-
-第 2 条是本层的关键：一次留出可以被一次运气骗过，四次连续复现不行。
+周期在训练段按方向化超额收益/持有天数选择，不能按留出显著性挑选。
+边界净化只消除标签窗口交叉，不保证各段统计独立。
+日线 H1/H3 等是持有期，不是分钟线/日线这样的 K 线频率。
 """
 from __future__ import annotations
 
@@ -48,10 +32,56 @@ class PersonalConfig:
     holdout_p_max: float = 0.05
     min_edge: float = 0.005       # 留出段优势 > 0.5pp
     min_folds_positive: int = 4   # 必须是 4/4 全同向
+    # ---- 周期公平性相关 ----
+    purge_folds: bool = True      # 折与折之间留出 h 根的空隙，避免前瞻窗口跨界
+    horizon_pick: str = "train_daily"  # train_daily=只用训练段按「每日毛超额收益」定周期；all=每个周期单独验
+    max_mdes: float = 0.20        # 仅报告提示，不作为新增通过门槛
+    min_power_eff: float = 8.0    # n/h近似低于此值时提示证据薄弱，不新增淘汰门槛
 
 
-def _fold_blocks(idx_hold: np.ndarray, n_folds: int) -> list[np.ndarray]:
-    return [b for b in np.array_split(idx_hold, n_folds) if b.size > 0]
+def _fold_blocks(idx_hold: np.ndarray, n_folds: int, gap: int = 0, bar_idx=None) -> list[np.ndarray]:
+    """把留出段切成 n_folds 个连续块。
+
+    gap>0 时从每块末尾切掉 gap 个样本：这些样本的 h 日前瞻窗口会伸进下一块，
+    若保留，四块就不再是四段时间稳定性检查，长周期会因为跨界重叠而虚高通过率。
+    """
+    if gap <= 0:
+        return [b for b in np.array_split(idx_hold, n_folds) if b.size > 0]
+    groups = np.array_split(idx_hold, n_folds)
+    out = []
+    for i, g in enumerate(groups):
+        if i < len(groups) - 1:
+            if bar_idx is None:
+                g = g[: max(0, g.size - gap)]
+            else:
+                boundary = bar_idx[groups[i + 1][0]] if groups[i + 1].size else np.inf
+                g = g[bar_idx[g] + gap < boundary]
+        if g.size:
+            out.append(g)
+    return out
+
+
+def _daily_score(sig, fwd, baseline: float, horizon: int) -> float:
+    """方向化毛超额收益/持有天数，不代表可执行净利润。"""
+    if len(sig) == 0:
+        return float("nan")
+    return float(np.mean(sig * (fwd - baseline))) / horizon
+
+
+def _sub(sig, up, fwd, base_up, horizon, overlap: bool) -> dict:
+    n = int(sig.size)
+    if n == 0:
+        return {"n": 0, "edge": float("nan"), "acc": float("nan"), "p": 1.0,
+                "n_long": 0, "n_short": 0, "ret": float("nan")}
+    long_m = sig > 0
+    short_m = sig < 0
+    n_l, n_s = int(long_m.sum()), int(short_m.sum())
+    hit = int(up[long_m].sum()) + int((~up[short_m]).sum())
+    acc = hit / n
+    p0 = (n_l * base_up + n_s * (1 - base_up)) / n
+    p = stats.binom_p_upper(acc, stats.effective_n(n, horizon, overlap), p0)
+    return {"n": n, "edge": acc - p0, "acc": acc, "p": p, "p0": p0,
+            "n_long": n_l, "n_short": n_s, "ret": float(np.mean(fwd))}
 
 
 def evaluate_symbol_personal(
@@ -60,121 +90,154 @@ def evaluate_symbol_personal(
     pcfg: PersonalConfig | None = None,
     rng=None,
 ) -> list[dict]:
-    """单标的个性化筛选：训练段选、留出段分块连续复现。
+    """单标的个性化筛选：训练段选规则与周期，留出段用分块+空隙做连续复现。
 
-    rng 不为 None 时进入安慰剂模式：在**每一段内部**独立打乱「是否上涨」标签
-    （训练段一次、每个留出块各一次）。这是正确的零假设——标签与信号无关。
-    不能用「整段平移」：平移保留了段与段之间的同向性，会让四段复现这道关失效。
+    三处针对「长周期吃亏」的修正：
+    1. **折间空隙（purge）**：每块末尾切掉 h 根，避免前瞻窗口跨块，四块才是不共享前瞻标签。
+    2. **周期只在训练段定**：按「每日毛超额收益」选周期（不是按留出段显著性选），
+       这样周期不是看了答案才挑的，也就不会自动倒向样本最多的 H1。
+    3. **功效记录**：每格都记下 n_eff=n/h 与最小可检出优势 mdes；
+       mdes 太大说明这格根本没能力分辨，标成「功效不足」而不是「没有规律」。
+
+    rng 不为 None 时进入安慰剂模式：在每一段内部独立打乱标签（训练段、每个留出块各一次）。
     """
     pcfg = pcfg or PersonalConfig()
     info, n, sigs = p.info, p.n, p.sigs
-    out: list[dict] = []
 
+    # ---------------- 先把每个周期的样本空间准备好 ----------------
+    ctx: dict[int, dict] = {}
     for h in ecfg.horizons:
         idx, f_cc, f_oc, up = p.masks(h)
         if idx.size < 200:
             continue
-
         is_train = idx < p.split_idx
+        ntr = int(is_train.sum())
         hold_pos = np.where(~is_train)[0]
         if hold_pos.size < pcfg.min_holdout:
             continue
-        blocks = _fold_blocks(hold_pos, pcfg.n_folds)
-
+        gap = h if pcfg.purge_folds else 0
+        blocks = _fold_blocks(hold_pos, pcfg.n_folds, gap=gap, bar_idx=idx)
+        if len(blocks) < pcfg.n_folds:
+            continue
+        ntr_keep = int(np.sum(idx + h < p.split_idx)) if gap else ntr   # 训练段同样切掉与留出段重叠的尾部
         if rng is not None:
-            up = up.copy()
-            ntr = int(is_train.sum())
-            up[:ntr] = rng.permutation(up[:ntr])
-            for b in blocks:
-                up[b] = rng.permutation(up[b])
+            # 同步置换涨跌标签和收益，安慰剂也必须重新做训练段周期选择。
+            # 段内置换会破坏序列相关，仅作敏感性诊断，不等于严格FDR估计。
+            up, f_cc = up.copy(), f_cc.copy()
+            for b in [np.arange(ntr_keep), *blocks]:
+                order = rng.permutation(b)
+                up[b], f_cc[b] = up[order], f_cc[order]
+        ctx[h] = {
+            "idx": idx, "fwd": f_cc, "up": up, "is_train": is_train,
+            "ntr": ntr, "ntr_keep": ntr_keep, "blocks": blocks,
+            "base_up": float(up[:ntr_keep].mean()) if ntr_keep else 0.5,
+            "hold_mask": np.isin(np.arange(idx.size), np.concatenate(blocks)) if blocks else np.zeros(idx.size, bool),
+        }
 
-        base_up = float(up.mean())
-
-        for r in RULES:
+    out: list[dict] = []
+    for r in RULES:
+        profiles: list[dict] = []
+        for h, c in ctx.items():
+            idx, up, fwd = c["idx"], c["up"], c["fwd"]
             s_all = sigs[r.key][idx]
             trig = s_all != 0
             if not trig.any():
                 continue
+            base_up = c["base_up"]
+            ntr_keep = c["ntr_keep"]
 
-            # ---- 训练段 ----
-            tm = trig & is_train
-            n_tr = int(tm.sum())
-            if n_tr < pcfg.min_train:
+            # ---- 训练段（已切掉与留出段重叠的尾部）----
+            tsel = np.zeros(idx.size, dtype=bool)
+            tsel[:ntr_keep] = True
+            tm = trig & tsel
+            if int(tm.sum()) < pcfg.min_train:
                 continue
-            long_t = s_all[tm] > 0
-            hit_t = int((long_t & up[tm]).sum()) + int((~long_t & ~up[tm]).sum())
-            acc_t = hit_t / n_tr
-            p0_t = (int(long_t.sum()) * base_up + int((~long_t).sum()) * (1 - base_up)) / n_tr
-            edge_t = acc_t - p0_t
-            p_t = stats.binom_p_upper(acc_t, stats.effective_n(n_tr, h, ecfg.overlap_adjust), p0_t)
+            tr = _sub(s_all[tm], up[tm], fwd[tm], base_up, h, ecfg.overlap_adjust)
 
-            # ---- 留出段分块复现 ----
-            fold_edges, fold_ns, fold_hits = [], [], []
-            for b in blocks:
+            # ---- 留出段分块 ----
+            fold_edges, fold_ns = [], []
+            for b in c["blocks"]:
                 m = trig[b]
                 nb = int(m.sum())
                 fold_ns.append(nb)
-                if nb == 0:
-                    fold_edges.append(float("nan"))
-                    fold_hits.append(float("nan"))
-                    continue
-                long_b = s_all[b][m] > 0
-                hit_b = int((long_b & up[b][m]).sum()) + int((~long_b & ~up[b][m]).sum())
-                acc_b = hit_b / nb
-                p0_b = (int(long_b.sum()) * base_up + int((~long_b).sum()) * (1 - base_up)) / nb
-                fold_edges.append(acc_b - p0_b)
-                fold_hits.append(acc_b)
+                fold_edges.append(
+                    _sub(s_all[b][m], up[b][m], fwd[b][m], float(up[b].mean()), h, ecfg.overlap_adjust)["edge"]
+                    if nb else float("nan"))
 
-            # ---- 留出段整体 ----
-            hm = trig & (~is_train)
-            n_ho = int(hm.sum())
-            if n_ho == 0:
-                continue
-            long_h = s_all[hm] > 0
-            hit_h = int((long_h & up[hm]).sum()) + int((~long_h & ~up[hm]).sum())
-            acc_h = hit_h / n_ho
-            p0_h = (int(long_h.sum()) * base_up + int((~long_h).sum()) * (1 - base_up)) / n_ho
-            edge_h = acc_h - p0_h
-            p_h = stats.binom_p_upper(acc_h, stats.effective_n(n_ho, h, ecfg.overlap_adjust), p0_h)
+            # ---- 留出段整体（只取四块覆盖的样本，不含空隙）----
+            hm = trig & c["hold_mask"]
+            ho = _sub(s_all[hm], up[hm], fwd[hm], float(up[c["hold_mask"]].mean()), h, ecfg.overlap_adjust)
+            n_ho = ho["n"]
 
             fe = np.array(fold_edges, dtype=float)
             fn = np.array(fold_ns, dtype=float)
-            valid_folds = np.isfinite(fe)
-            folds_pos = int(np.sum(fe[valid_folds] > 0))
-            folds_enough = bool(np.all(fn[valid_folds] >= pcfg.min_fold))
+            okf = np.isfinite(fe)
+            folds_pos = int(np.sum(fe[okf] > 0))
+            folds_enough = bool(np.all(fn[okf] >= pcfg.min_fold))
 
-            tr_ok = (n_tr >= pcfg.min_train and edge_t > 0 and p_t <= pcfg.train_p_max)
-            fold_ok = (valid_folds.sum() == pcfg.n_folds and folds_enough
+            n_eff = stats.effective_n(n_ho, h, ecfg.overlap_adjust) if n_ho else 0.0
+            mdes = stats.min_detectable_edge(n_eff, ho.get("p0", base_up)) if n_eff else float("nan")
+            power_ok = bool(np.isfinite(mdes) and mdes <= pcfg.max_mdes and n_eff >= pcfg.min_power_eff)
+
+            # 每日毛超额收益（用于在训练段选周期；经济口径，不是显著性口径）
+            # 候选周期使用相同训练截止；有效日期可因artifact等掩码不同。正负信号均计入。
+            score_mask = trig & (idx + max(ecfg.horizons) < p.split_idx)
+            score_base_mask = idx + max(ecfg.horizons) < p.split_idx
+            train_base_return = float(np.mean(fwd[score_base_mask])) if score_base_mask.any() else 0.0
+            daily_train = (_daily_score(s_all[score_mask], fwd[score_mask], train_base_return, h)
+                           if score_mask.sum() >= pcfg.min_train else float("nan"))
+
+            tr_ok = (tr["n"] >= pcfg.min_train and tr["edge"] > 0 and tr["p"] <= pcfg.train_p_max)
+            fold_ok = (okf.sum() == pcfg.n_folds and folds_enough
                        and folds_pos >= pcfg.min_folds_positive)
-            ho_ok = (n_ho >= pcfg.min_holdout and edge_h >= pcfg.min_edge
-                     and p_h <= pcfg.holdout_p_max)
+            ho_ok = (n_ho >= pcfg.min_holdout and ho["edge"] >= pcfg.min_edge
+                     and ho["p"] <= pcfg.holdout_p_max)
 
-            # 候选：3/4 块同向 + 训练段显著 + 留出方向为正（未达全部门槛）
-            watch = (tr_ok and valid_folds.sum() == pcfg.n_folds and folds_enough
-                     and folds_pos >= pcfg.n_folds - 1 and edge_h > 0)
-
-            out.append({
+            profiles.append({
                 "code": info.code, "name": info.name, "category": info.category,
                 "board": info.board, "rule": r.key, "family": r.family,
                 "desc": r.desc, "horizon": h,
-                "n_train": n_tr, "acc_train": acc_t, "base_train": p0_t,
-                "edge_train": edge_t, "p_train": p_t,
-                "n_hold": n_ho, "acc_hold": acc_h, "base_hold": p0_h,
-                "edge_hold": edge_h, "p_hold": p_h,
+                "n_train": tr["n"], "acc_train": tr["acc"], "base_train": tr.get("p0", float("nan")),
+                "edge_train": tr["edge"], "p_train": tr["p"],
+                "n_hold": n_ho, "acc_hold": ho["acc"], "base_hold": ho.get("p0", float("nan")),
+                "edge_hold": ho["edge"], "p_hold": ho["p"],
                 "fold_edges": [None if not np.isfinite(x) else float(x) for x in fe],
                 "fold_ns": [int(x) for x in fn],
-                "folds_positive": folds_pos,
-                "folds_enough": folds_enough,
-                "min_fold_edge": float(np.nanmin(fe)) if np.isfinite(fe).any() else float("nan"),
-                "trigger_rate": n_ho / float(idx.size),
-                "n_long": int(long_h.sum()), "n_short": int((~long_h).sum()),
+                "folds_positive": folds_pos, "folds_enough": folds_enough,
+                "min_fold_edge": float(np.nanmin(fe)) if okf.any() else float("nan"),
+                "trigger_rate": n_ho / float(idx.size) if idx.size else float("nan"),
+                "n_long": ho["n_long"], "n_short": ho["n_short"],
                 "acc_exec": float("nan"),
-                "pass_train": bool(tr_ok),
-                "pass_folds": bool(fold_ok),
+                "n_eff_hold": float(n_eff), "mdes_hold": float(mdes), "power_ok": power_ok,
+                "daily_train": float(daily_train),
+                "daily_hold": _daily_score(s_all[hm], fwd[hm], float(np.mean(fwd[c["hold_mask"]])), h),
+                "pass_train": bool(tr_ok), "pass_folds": bool(fold_ok),
                 "pass_holdout": bool(ho_ok),
                 "validated": bool(tr_ok and fold_ok and ho_ok),
-                "watchlist": bool(watch and not (tr_ok and fold_ok and ho_ok)),
+                "watchlist": bool(tr_ok and okf.sum() == pcfg.n_folds and folds_enough
+                                  and folds_pos >= pcfg.n_folds - 1 and ho["edge"] > 0
+                                  and not (tr_ok and fold_ok and ho_ok)),
+                "horizon_chosen": False,
             })
+
+        if not profiles:
+            continue
+
+        if pcfg.horizon_pick == "train_daily":
+            # 周期只在训练段定：取「每日毛超额收益」最高的那个，其余周期一律不晋级
+            cands = [x for x in profiles if x["n_train"] >= pcfg.min_train and np.isfinite(x["daily_train"])]
+            pick = max(cands, key=lambda x: x["daily_train"]) if cands else None
+            for x in profiles:
+                if pick is not None and x is pick:
+                    x["horizon_chosen"] = True
+                else:
+                    x["validated"] = False
+                    x["watchlist"] = False
+        else:
+            for x in profiles:
+                if x["validated"]:
+                    x["horizon_chosen"] = True
+        out.extend(profiles)
     return out
 
 
@@ -246,8 +309,9 @@ def best_per_symbol(validated: pd.DataFrame) -> pd.DataFrame:
     """每个标的一条主规则（按留出段优势取最好，同分时 p 值小的优先）。"""
     if validated.empty:
         return validated
-    cols = ["edge_hold"] + (["p_hold"] if "p_hold" in validated.columns else [])
-    v = validated.sort_values(cols, ascending=[False] * len(cols))
+    # 修正版主规则按训练分数排序，不再对留出优势取最大。
+    cols = ["daily_train"] if "daily_train" in validated.columns else ["edge_hold"]
+    v = validated.sort_values(cols, ascending=False)
     return v.drop_duplicates(subset=["code"], keep="first")
 
 
@@ -338,6 +402,17 @@ def run_personalize(cfg: Config | None = None, pool: str = "mainstream",
         "horizons": list(ecfg.horizons),
         "tests": int(len(rec_df)),
         "gate": asdict(pcfg),
+        "method_revision": "purged_train_only_horizon_v2",
+        "research_status": "exploratory_same_history_not_fresh_holdout",
+        "horizon_diagnostics": [
+            {"horizon": int(h), "tests": len(g),
+             "chosen_train": int(g["horizon_chosen"].sum()),
+             "validated": int(g["validated"].sum()),
+             "median_n_hold": float(g["n_hold"].median()),
+             "median_n_eff": float(g["n_eff_hold"].median()),
+             "median_mdes": float(g["mdes_hold"].median()),
+             "power_limited": int((~g["power_ok"]).sum())}
+            for h, g in rec_df.groupby("horizon")],
         "accepted_market_pairs": [f"{r} H{h}" for r, h in accepted],
         "totals": {
             "validated_pairs": int(rec_df["validated"].sum()),
