@@ -202,12 +202,21 @@ def evaluate(panel: pd.DataFrame, meta: pd.DataFrame, config: XSConfig) -> dict:
             fr = feats[f"rs{lb}_rank"]
             top = fr >= 0.8
             bottom = fr <= 0.2
-            up_all = float((fwd > 0).stack().mean())
+            # 注意：不能写 (fwd.where(top) > 0).stack().mean()——NaN>0 得到 False，
+            # 会把所有未选中的格子当成「没涨」，上涨率被稀释成个位数。
+            def up_rate(mask):
+                m = mask & fwd.notna()
+                total = float(m.to_numpy().sum())
+                if total <= 0:
+                    return None
+                hits = float(((fwd > 0) & m).to_numpy().sum())
+                return hits / total
+
             abs_rows.append({
                 "lookback": lb, "horizon": h,
-                "top_up_rate": float((fwd.where(top) > 0).stack().mean()),
-                "bottom_up_rate": float((fwd.where(bottom) > 0).stack().mean()),
-                "all_up_rate": up_all,
+                "top_up_rate": up_rate(top),
+                "bottom_up_rate": up_rate(bottom),
+                "all_up_rate": up_rate(pd.DataFrame(True, index=fwd.index, columns=fwd.columns)),
             })
 
     return {"ic": results, "absolute": abs_rows,

@@ -1,0 +1,230 @@
+{
+  "generated_at": "2026-11-06T11:59:06",
+  "method": "cross_section_rs_v1",
+  "config": {
+    "start": "2015-01-01",
+    "min_bars": 500,
+    "horizons": [
+      1,
+      5,
+      20
+    ],
+    "lookbacks": [
+      5,
+      20,
+      60
+    ],
+    "min_symbols_per_day": 200,
+    "quantiles": 5
+  },
+  "results": {
+    "ic": [
+      {
+        "kind": "relative_strength",
+        "feature": "rs5",
+        "horizon": 1,
+        "days": 2788,
+        "ic_mean": -0.032225039784863886,
+        "ic_t": -8.478177853409115,
+        "ic_positive_share": 0.393526405451448,
+        "spread_mean": 1.0172018721799246e-05,
+        "spread_t": 0.043017289101149256
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs5",
+        "horizon": 5,
+        "days": 2754,
+        "ic_mean": -0.029395607796810646,
+        "ic_t": -5.885087562158555,
+        "ic_positive_share": 0.3904599659284497,
+        "spread_mean": -0.0022971524072890816,
+        "spread_t": -3.0578171454516148
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs5",
+        "horizon": 20,
+        "days": 2744,
+        "ic_mean": -0.022590261990340466,
+        "ic_t": -3.9823278391052814,
+        "ic_positive_share": 0.4265758091993186,
+        "spread_mean": -0.005397168693571335,
+        "spread_t": -3.2734137177069633
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs20",
+        "horizon": 1,
+        "days": 2775,
+        "ic_mean": -0.028071057597617285,
+        "ic_t": -7.631061752807985,
+        "ic_positive_share": 0.4143100511073254,
+        "spread_mean": -0.0005360113920079811,
+        "spread_t": -2.39013819192733
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs20",
+        "horizon": 5,
+        "days": 2744,
+        "ic_mean": -0.0380306318688404,
+        "ic_t": -5.958682967311999,
+        "ic_positive_share": 0.39182282793867124,
+        "spread_mean": -0.004253692908782189,
+        "spread_t": -4.19583744204704
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs20",
+        "horizon": 20,
+        "days": 2735,
+        "ic_mean": -0.05827309701277212,
+        "ic_t": -5.251978581442848,
+        "ic_positive_share": 0.36320272572402046,
+        "spread_mean": -0.014797820518534038,
+        "spread_t": -4.301942981182813
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs60",
+        "horizon": 1,
+        "days": 2743,
+        "ic_mean": -0.021580541486756182,
+        "ic_t": -5.182809909841061,
+        "ic_positive_share": 0.43066439522998295,
+        "spread_mean": -0.0008797600732261656,
+        "spread_t": -3.3511517732158795
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs60",
+        "horizon": 5,
+        "days": 2713,
+        "ic_mean": -0.03812279126173678,
+        "ic_t": -4.78161178325771,
+        "ic_positive_share": 0.396252129471891,
+        "spread_mean": -0.004968410078901249,
+        "spread_t": -3.9859581160940616
+      },
+      {
+        "kind": "relative_strength",
+        "feature": "rs60",
+        "horizon": 20,
+        "days": 2700,
+        "ic_mean": -0.054406679563536585,
+        "ic_t": -4.2757973300257275,
+        "ic_positive_share": 0.35093696763202725,
+        "spread_mean": -0.013304709908527683,
+        "spread_t": -3.529300152580549
+      },
+      {
+        "kind": "volatility",
+        "feature": "vol20",
+        "horizon": 1,
+        "days": 2342,
+        "ic_mean": -0.05527359556865353,
+        "ic_t": -13.499673996057513,
+        "ic_positive_share": 0.3063032367972743,
+        "spread_mean": null,
+        "spread_t": null
+      },
+      {
+        "kind": "volatility",
+        "feature": "vol20",
+        "horizon": 5,
+        "days": 2320,
+        "ic_mean": -0.07769738447886956,
+        "ic_t": -9.24059973747012,
+        "ic_positive_share": 0.262350936967632,
+        "spread_mean": null,
+        "spread_t": null
+      },
+      {
+        "kind": "volatility",
+        "feature": "vol20",
+        "horizon": 20,
+        "days": 2317,
+        "ic_mean": -0.1078065526707396,
+        "ic_t": -7.466313882312393,
+        "ic_positive_share": 0.2374787052810903,
+        "spread_mean": null,
+        "spread_t": null
+      }
+    ],
+    "absolute": [
+      {
+        "lookback": 5,
+        "horizon": 1,
+        "top_up_rate": 0.4593419439900723,
+        "bottom_up_rate": 0.49352180835900183,
+        "all_up_rate": 0.4858222629080943
+      },
+      {
+        "lookback": 5,
+        "horizon": 5,
+        "top_up_rate": 0.456944063977922,
+        "bottom_up_rate": 0.475340931304645,
+        "all_up_rate": 0.4848414287035611
+      },
+      {
+        "lookback": 5,
+        "horizon": 20,
+        "top_up_rate": 0.4481123855742555,
+        "bottom_up_rate": 0.4651358678868758,
+        "all_up_rate": 0.47919815919805053
+      },
+      {
+        "lookback": 20,
+        "horizon": 1,
+        "top_up_rate": 0.4664653017456149,
+        "bottom_up_rate": 0.49204809058689386,
+        "all_up_rate": 0.4858222629080943
+      },
+      {
+        "lookback": 20,
+        "horizon": 5,
+        "top_up_rate": 0.4524585686313459,
+        "bottom_up_rate": 0.48413985301700996,
+        "all_up_rate": 0.4848414287035611
+      },
+      {
+        "lookback": 20,
+        "horizon": 20,
+        "top_up_rate": 0.43792268066157075,
+        "bottom_up_rate": 0.4818618704232051,
+        "all_up_rate": 0.47919815919805053
+      },
+      {
+        "lookback": 60,
+        "horizon": 1,
+        "top_up_rate": 0.47200401610025905,
+        "bottom_up_rate": 0.4864079979419594,
+        "all_up_rate": 0.4858222629080943
+      },
+      {
+        "lookback": 60,
+        "horizon": 5,
+        "top_up_rate": 0.4562597939833451,
+        "bottom_up_rate": 0.48722856694366895,
+        "all_up_rate": 0.4848414287035611
+      },
+      {
+        "lookback": 60,
+        "horizon": 20,
+        "top_up_rate": 0.44138123483211367,
+        "bottom_up_rate": 0.4832507610292919,
+        "all_up_rate": 0.47919815919805053
+      }
+    ],
+    "panel_shape": [
+      2935,
+      7175
+    ],
+    "date_range": [
+      "2015-01-01",
+      "2026-11-05"
+    ],
+    "meta": "            key    code       name category\n0     个股|000001  000001       平安银行       个股\n1     个股|000002  000002        万科Ａ       个股\n2     个股|000006  000006       深振业Ａ       个股\n3     个股|000007  000007        全新好       个股\n4     个股|000008  000008       神州高铁       个股\n...         ...     ...        ...      ...\n7170  指数|950106  950106       上证创新       指数\n7171  指数|950107  950107      380创新       指数\n7172  指数|950125  950125  科创半导体材料设备       指数\n7173  指数|950162  950162     科创芯片设计       指数\n7174  指数|950333  950333     智选创新价值       指数\n\n[7175 rows x 4 columns]"
+  }
+}
