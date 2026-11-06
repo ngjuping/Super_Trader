@@ -33,7 +33,7 @@ EXCLUDED = {'month_start_long', 'month_end_long', 'pre_holiday_long'}
 
 @dataclass(frozen=True)
 class FullFitConfig:
-    horizons: tuple[int, ...] = (1, 3, 5, 10, 20)
+    horizons: tuple[int, ...] = tuple(range(1, 21))  # 1~20 根，取胜率最高的一根
     half_life_days: float = 365.0   # 权重半衰期：一年
     min_signals: int = 80           # 单条规则至少触发多少次才入选
     target_accuracy: float = 0.55   # 达到这个加权准确率就停止加规则
@@ -178,6 +178,23 @@ def fit_symbol(p: PreparedSymbol, config: FullFitConfig) -> dict:
             'unfiltered_accuracy': (float(np.mean(pred == actual)) if idx.size else None),
             'always_up_accuracy': float(np.mean(actual == 1)) if idx.size else None,
         }
+        # 当前方向：把选中的规则套到最后一根 bar 上投票
+        last_votes = []
+        for key in chosen:
+            v = int(np.asarray(p.sigs[key])[-1])
+            if v:
+                last_votes.append(v)
+        latest_dir = int(np.sign(sum(last_votes))) if last_votes else 0
+        if p.art_strict[-1]:
+            latest_dir = 0
+        base_up = float(np.mean(actual == 1)) if idx.size else None
+        row['latest_direction'] = latest_dir
+        row['direction_label'] = {1: '涨', -1: '跌', 0: '中性'}[latest_dir]
+        # 口径：模型看涨时，历史同信号胜率 = 第 N 根后上涨概率；看跌时即下跌概率
+        row['probability'] = acc if latest_dir != 0 else None
+        row['base_up_rate'] = base_up
+        row['edge_pp'] = ((acc - base_up) * 100) if (base_up is not None and latest_dir == 1) else None
+
         # 每个标的保留加权准确率最高的持有期
         if best is None or (np.isfinite(acc) and acc > (best['weighted_accuracy'] or 0)):
             best = row

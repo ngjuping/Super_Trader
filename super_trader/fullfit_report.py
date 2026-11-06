@@ -23,6 +23,14 @@ def build_fullfit_html(payload: dict, out_path: str | Path | None = None) -> Pat
 
     def tr(r):
         tone = "pos" if (r["weighted_accuracy"] or 0) >= .6 else ""
+        d = r.get("latest_direction")
+        cls = "up" if d == 1 else ("down" if d == -1 else "flat")
+        if r.get("probability") is not None:
+            label = f'{r["direction_label"]} {_pct(r["probability"])}'
+        else:
+            base = r.get("base_up_rate")
+            label = (f'中性（该周期历史上涨率 {_pct(base)}）' if base is not None
+                     else '中性')
         inv = ' <span class="warn">反向</span>' if r.get("inverted") else ""
         rules = " + ".join(escape(x.split("__")[-1]) for x in (r.get("rules") or []))
         return f"""<tr data-acc="{r['weighted_accuracy'] or 0}" data-n="{r['predictions'] or 0}">
@@ -30,11 +38,12 @@ def build_fullfit_html(payload: dict, out_path: str | Path | None = None) -> Pat
           <td><span class="mono">{escape(r['code'])}</span> <b>{escape(r['name'])}</b>
               <span class="tag">{escape(r['category'])}</span>{inv}</td>
           <td class="num acc"><b class="{tone}">{_pct(r['weighted_accuracy'])}</b></td>
+          <td class="num"><b>{r['horizon']}</b></td>
+          <td class="dir {cls}">{label}</td>
           <td class="num">{_pct(r['recent_accuracy'])}</td>
           <td class="num muted">{_pct(r['plain_accuracy'])}</td>
           <td class="num"><b>{(r['predictions'] or 0):,}</b></td>
           <td class="num">{_pct(r['coverage'], 1)}</td>
-          <td class="num">H{r['horizon']}</td>
           <td class="mono" style="font-size:12px">{rules}</td>
         </tr>"""
 
@@ -72,12 +81,13 @@ tbody tr:hover{{background:#f8faff}}
 .num{{text-align:right;font-variant-numeric:tabular-nums}}
 .mono{{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#475569}}
 .muted{{color:var(--muted)}} .pos{{color:var(--pos)}} .warn{{color:var(--warn);font-size:11px}}
+.dir{{font-weight:700}} .dir.up{{color:#b91c1c}} .dir.down{{color:#047857}} .dir.flat{{color:var(--muted);font-weight:400}}
 .tag{{font-size:10.5px;background:#eef2ff;color:var(--accent);padding:1px 7px;border-radius:999px;margin-left:4px}}
 footer{{color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px;margin-top:22px}}
 </style></head><body>
 <header><div class="in">
   <div class="eyebrow">Super_Trader · 全历史拟合（不分验证集/测试集）</div>
-  <h1>各标的加权准确率排行</h1>
+  <h1>各标的：第 N 根后的涨跌概率</h1>
   <p>全部历史参与拟合；样本权重按半衰期 {cfg.get('half_life_days', 365):.0f} 天衰减，
   最近一年权重最高。每个标的在 78 条规则 × 5 个持有期中挑选，不达标就叠加或换规则。</p>
   <div class="kpis">
@@ -105,9 +115,9 @@ footer{{color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);pad
   </div>
   <div class="table-wrap"><table id="t">
     <thead><tr><th>#</th><th>标的</th><th class="num">加权准确率</th>
+      <th class="num">持有期</th><th>第N根后</th>
       <th class="num">最近一年</th><th class="num">未加权</th>
-      <th class="num">预测次数</th><th class="num">覆盖率</th>
-      <th class="num">周期</th><th>选中规则</th></tr></thead>
+      <th class="num">预测次数</th><th class="num">覆盖率</th><th>选中规则</th></tr></thead>
     <tbody>{''.join(tr(r) for r in rows)}</tbody>
   </table></div>
   <footer>
