@@ -96,6 +96,14 @@ def cmd_personalize(args) -> int:
     return 0
 
 
+def cmd_accuracy(args) -> int:
+    from .accuracy import AccuracyConfig, run_accuracy
+    config = AccuracyConfig(min_fit_signals=args.min_fit_signals,
+                            min_calibration_predictions=args.min_calibration_predictions)
+    run_accuracy(_load_cfg(args), pool=args.pool, config=config, limit=args.limit)
+    return 0
+
+
 def cmd_placebo(args) -> int:
     from .diagnose import placebo_test
 
@@ -150,6 +158,13 @@ def build_parser() -> argparse.ArgumentParser:
     per.add_argument("--reps", type=int, default=2, help="安慰剂重复轮数")
     per.add_argument("--seed", type=int, default=17)
     per.set_defaults(func=cmd_personalize)
+
+    acc = sub.add_parser("accuracy", help="准确率优先：看涨/看跌/中性，按时间分拟合、校准和测试")
+    acc.add_argument("--pool", default="mainstream")
+    acc.add_argument("--limit", type=int, default=None)
+    acc.add_argument("--min-fit-signals", type=int, default=60)
+    acc.add_argument("--min-calibration-predictions", type=int, default=30)
+    acc.set_defaults(func=cmd_accuracy)
 
     return p
 

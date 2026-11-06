@@ -1,0 +1,3412 @@
+[
+  {
+    "category": "指数",
+    "code": "000001",
+    "name": "上证指数",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000001",
+    "name": "上证指数",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000001",
+    "name": "上证指数",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000001",
+    "name": "上证指数",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000001",
+    "name": "上证指数",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399001",
+    "name": "深证成指",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5964125560538116
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399001",
+    "name": "深证成指",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399001",
+    "name": "深证成指",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.621975806451613
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399001",
+    "name": "深证成指",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399001",
+    "name": "深证成指",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6181818181818182
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399006",
+    "name": "创业板指",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399006",
+    "name": "创业板指",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399006",
+    "name": "创业板指",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5335968379446641
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399006",
+    "name": "创业板指",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399006",
+    "name": "创业板指",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000688",
+    "name": "科创50",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000688",
+    "name": "科创50",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.534621578099839
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000688",
+    "name": "科创50",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000688",
+    "name": "科创50",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5781758957654723
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000688",
+    "name": "科创50",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000300",
+    "name": "沪深300",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000300",
+    "name": "沪深300",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.631578947368421
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000300",
+    "name": "沪深300",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000300",
+    "name": "沪深300",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6483739837398373
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000300",
+    "name": "沪深300",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000905",
+    "name": "中证500",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000905",
+    "name": "中证500",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000905",
+    "name": "中证500",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000905",
+    "name": "中证500",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000905",
+    "name": "中证500",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000852",
+    "name": "中证1000",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000852",
+    "name": "中证1000",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000852",
+    "name": "中证1000",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000852",
+    "name": "中证1000",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000852",
+    "name": "中证1000",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000016",
+    "name": "上证50",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000016",
+    "name": "上证50",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000016",
+    "name": "上证50",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000016",
+    "name": "上证50",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5994236311239193
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000016",
+    "name": "上证50",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399303",
+    "name": "国证2000",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399303",
+    "name": "国证2000",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399303",
+    "name": "国证2000",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399303",
+    "name": "国证2000",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399303",
+    "name": "国证2000",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399005",
+    "name": "中小100",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399005",
+    "name": "中小100",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5675743459555986
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399005",
+    "name": "中小100",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5882469386057562
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399005",
+    "name": "中小100",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6139154160982264
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399005",
+    "name": "中小100",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399975",
+    "name": "证券公司",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399975",
+    "name": "证券公司",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399975",
+    "name": "证券公司",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399975",
+    "name": "证券公司",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399975",
+    "name": "证券公司",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399986",
+    "name": "中证银行",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5319767441860465
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399986",
+    "name": "中证银行",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399986",
+    "name": "中证银行",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399986",
+    "name": "中证银行",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399986",
+    "name": "中证银行",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399997",
+    "name": "中证白酒",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.59375
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399997",
+    "name": "中证白酒",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6237631613122352
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399997",
+    "name": "中证白酒",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399997",
+    "name": "中证白酒",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399997",
+    "name": "中证白酒",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399396",
+    "name": "国证食品",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399396",
+    "name": "国证食品",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399396",
+    "name": "国证食品",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399396",
+    "name": "国证食品",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399396",
+    "name": "国证食品",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399417",
+    "name": "新能源车",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5174736075718966
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399417",
+    "name": "新能源车",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399417",
+    "name": "新能源车",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399417",
+    "name": "新能源车",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399417",
+    "name": "新能源车",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6493055555555556
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399967",
+    "name": "中证军工",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399967",
+    "name": "中证军工",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399967",
+    "name": "中证军工",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399967",
+    "name": "中证军工",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399967",
+    "name": "中证军工",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000819",
+    "name": "有色金属",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5601230268262047
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000819",
+    "name": "有色金属",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000819",
+    "name": "有色金属",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000819",
+    "name": "有色金属",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000819",
+    "name": "有色金属",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399998",
+    "name": "中证煤炭",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399998",
+    "name": "中证煤炭",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.6074074074074074
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399998",
+    "name": "中证煤炭",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5284418503287377
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399998",
+    "name": "中证煤炭",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5414698999630227
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399998",
+    "name": "中证煤炭",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000813",
+    "name": "细分化工",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5816993464052288
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000813",
+    "name": "细分化工",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5179940622176327
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000813",
+    "name": "细分化工",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000813",
+    "name": "细分化工",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000813",
+    "name": "细分化工",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931775",
+    "name": "房地产",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931775",
+    "name": "房地产",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5082783557472723
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931775",
+    "name": "房地产",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931775",
+    "name": "房地产",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931775",
+    "name": "房地产",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000949",
+    "name": "中证农业",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000949",
+    "name": "中证农业",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5756505245466045
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000949",
+    "name": "中证农业",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5871400495761474
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000949",
+    "name": "中证农业",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5845608282015596
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000949",
+    "name": "中证农业",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.6074196926948755
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399440",
+    "name": "国证钢铁",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399440",
+    "name": "国证钢铁",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399440",
+    "name": "国证钢铁",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399440",
+    "name": "国证钢铁",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5517771017178786
+    }
+  },
+  {
+    "category": "指数",
+    "code": "399440",
+    "name": "国证钢铁",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931079",
+    "name": "5G通信",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931079",
+    "name": "5G通信",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.56640625
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931079",
+    "name": "5G通信",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5693430656934306
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931079",
+    "name": "5G通信",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5000225488268648
+    }
+  },
+  {
+    "category": "指数",
+    "code": "931079",
+    "name": "5G通信",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.576
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000922",
+    "name": "中证红利",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000922",
+    "name": "中证红利",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000922",
+    "name": "中证红利",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000922",
+    "name": "中证红利",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "指数",
+    "code": "000922",
+    "name": "中证红利",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510300",
+    "name": "沪深300ETF华泰柏瑞",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5419354838709678
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510300",
+    "name": "沪深300ETF华泰柏瑞",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510300",
+    "name": "沪深300ETF华泰柏瑞",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.50085541497573
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510300",
+    "name": "沪深300ETF华泰柏瑞",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.6037735849056605
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510300",
+    "name": "沪深300ETF华泰柏瑞",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5761904761904761
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510500",
+    "name": "中证500ETF南方",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6097560975609755
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510500",
+    "name": "中证500ETF南方",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510500",
+    "name": "中证500ETF南方",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510500",
+    "name": "中证500ETF南方",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510500",
+    "name": "中证500ETF南方",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510050",
+    "name": "上证50ETF华夏",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510050",
+    "name": "上证50ETF华夏",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510050",
+    "name": "上证50ETF华夏",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510050",
+    "name": "上证50ETF华夏",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "510050",
+    "name": "上证50ETF华夏",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159915",
+    "name": "创业板ETF易方达",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159915",
+    "name": "创业板ETF易方达",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159915",
+    "name": "创业板ETF易方达",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5307692307692308
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159915",
+    "name": "创业板ETF易方达",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159915",
+    "name": "创业板ETF易方达",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5483091787439613
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "588000",
+    "name": "科创50ETF华夏",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5394736842105263
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "588000",
+    "name": "科创50ETF华夏",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "588000",
+    "name": "科创50ETF华夏",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "588000",
+    "name": "科创50ETF华夏",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "588000",
+    "name": "科创50ETF华夏",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512100",
+    "name": "中证1000ETF南方",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5072254335260116
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512100",
+    "name": "中证1000ETF南方",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512100",
+    "name": "中证1000ETF南方",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5444444444444444
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512100",
+    "name": "中证1000ETF南方",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512100",
+    "name": "中证1000ETF南方",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512880",
+    "name": "证券ETF国泰",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6170212765957447
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512880",
+    "name": "证券ETF国泰",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5957446808510638
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512880",
+    "name": "证券ETF国泰",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512880",
+    "name": "证券ETF国泰",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512880",
+    "name": "证券ETF国泰",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "518880",
+    "name": "黄金ETF华安",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5437382677024809
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "518880",
+    "name": "黄金ETF华安",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5300802172570318
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "518880",
+    "name": "黄金ETF华安",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.6025641025641025
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "518880",
+    "name": "黄金ETF华安",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.6153846153846154
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "518880",
+    "name": "黄金ETF华安",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "513050",
+    "name": "中概互联网ETF易方达",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "513050",
+    "name": "中概互联网ETF易方达",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "513050",
+    "name": "中概互联网ETF易方达",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.51872446195754
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "513050",
+    "name": "中概互联网ETF易方达",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "513050",
+    "name": "中概互联网ETF易方达",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512690",
+    "name": "酒ETF鹏华",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512690",
+    "name": "酒ETF鹏华",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5537740447604865
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512690",
+    "name": "酒ETF鹏华",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5470724738797328
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512690",
+    "name": "酒ETF鹏华",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6338028169014085
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512690",
+    "name": "酒ETF鹏华",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512480",
+    "name": "半导体ETF国联安",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5509917063873553
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512480",
+    "name": "半导体ETF国联安",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.6089108910891089
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512480",
+    "name": "半导体ETF国联安",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5437336164157809
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512480",
+    "name": "半导体ETF国联安",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5989847715736041
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512480",
+    "name": "半导体ETF国联安",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.6631016042780749
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159949",
+    "name": "创业板50ETF华安",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159949",
+    "name": "创业板50ETF华安",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159949",
+    "name": "创业板50ETF华安",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159949",
+    "name": "创业板50ETF华安",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.581270051684462
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "159949",
+    "name": "创业板50ETF华安",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5862213649795975
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512660",
+    "name": "军工ETF国泰",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5619047619047619
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512660",
+    "name": "军工ETF国泰",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512660",
+    "name": "军工ETF国泰",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512660",
+    "name": "军工ETF国泰",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "512660",
+    "name": "军工ETF国泰",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "515790",
+    "name": "光伏ETF华泰柏瑞",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5247276643346319
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "515790",
+    "name": "光伏ETF华泰柏瑞",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5372027394810492
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "515790",
+    "name": "光伏ETF华泰柏瑞",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5543045504856879
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "515790",
+    "name": "光伏ETF华泰柏瑞",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5119691882371316
+    }
+  },
+  {
+    "category": "ETF",
+    "code": "515790",
+    "name": "光伏ETF华泰柏瑞",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6126869402573953
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600519",
+    "name": "贵州茅台",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600519",
+    "name": "贵州茅台",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5304091975397376
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600519",
+    "name": "贵州茅台",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600519",
+    "name": "贵州茅台",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5623529411764706
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600519",
+    "name": "贵州茅台",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300750",
+    "name": "宁德时代",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6091240578679775
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300750",
+    "name": "宁德时代",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6233766233766234
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300750",
+    "name": "宁德时代",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5852755171583826
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300750",
+    "name": "宁德时代",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300750",
+    "name": "宁德时代",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601318",
+    "name": "中国平安",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601318",
+    "name": "中国平安",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5307125307125307
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601318",
+    "name": "中国平安",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5358024691358024
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601318",
+    "name": "中国平安",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5410128459099175
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601318",
+    "name": "中国平安",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600036",
+    "name": "招商银行",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600036",
+    "name": "招商银行",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600036",
+    "name": "招商银行",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5417867435158501
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600036",
+    "name": "招商银行",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.570281124497992
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600036",
+    "name": "招商银行",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.553460058652578
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000858",
+    "name": "五粮液",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000858",
+    "name": "五粮液",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000858",
+    "name": "五粮液",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000858",
+    "name": "五粮液",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000858",
+    "name": "五粮液",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002594",
+    "name": "比亚迪",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5947174555268647
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002594",
+    "name": "比亚迪",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5952380952380952
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002594",
+    "name": "比亚迪",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002594",
+    "name": "比亚迪",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002594",
+    "name": "比亚迪",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601899",
+    "name": "紫金矿业",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601899",
+    "name": "紫金矿业",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601899",
+    "name": "紫金矿业",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601899",
+    "name": "紫金矿业",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6142857142857143
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601899",
+    "name": "紫金矿业",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5950980392156863
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600900",
+    "name": "长江电力",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600900",
+    "name": "长江电力",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600900",
+    "name": "长江电力",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600900",
+    "name": "长江电力",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600900",
+    "name": "长江电力",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5876288659793815
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601012",
+    "name": "隆基绿能",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601012",
+    "name": "隆基绿能",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5434782608695652
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601012",
+    "name": "隆基绿能",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5998890777352865
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601012",
+    "name": "隆基绿能",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601012",
+    "name": "隆基绿能",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000333",
+    "name": "美的集团",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000333",
+    "name": "美的集团",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000333",
+    "name": "美的集团",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000333",
+    "name": "美的集团",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000333",
+    "name": "美的集团",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600030",
+    "name": "中信证券",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600030",
+    "name": "中信证券",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600030",
+    "name": "中信证券",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600030",
+    "name": "中信证券",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600030",
+    "name": "中信证券",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601088",
+    "name": "中国神华",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5345537089199923
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601088",
+    "name": "中国神华",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5174064594676785
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601088",
+    "name": "中国神华",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601088",
+    "name": "中国神华",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601088",
+    "name": "中国神华",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5320271201244356
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600276",
+    "name": "恒瑞医药",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600276",
+    "name": "恒瑞医药",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600276",
+    "name": "恒瑞医药",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600276",
+    "name": "恒瑞医药",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600276",
+    "name": "恒瑞医药",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000651",
+    "name": "格力电器",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000651",
+    "name": "格力电器",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000651",
+    "name": "格力电器",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000651",
+    "name": "格力电器",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.560067681895093
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000651",
+    "name": "格力电器",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.6345811051693404
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002415",
+    "name": "海康威视",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002415",
+    "name": "海康威视",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002415",
+    "name": "海康威视",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002415",
+    "name": "海康威视",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002415",
+    "name": "海康威视",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601166",
+    "name": "兴业银行",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601166",
+    "name": "兴业银行",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601166",
+    "name": "兴业银行",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601166",
+    "name": "兴业银行",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601166",
+    "name": "兴业银行",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600887",
+    "name": "伊利股份",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.552560173593409
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600887",
+    "name": "伊利股份",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600887",
+    "name": "伊利股份",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600887",
+    "name": "伊利股份",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600887",
+    "name": "伊利股份",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601988",
+    "name": "中国银行",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5193370165745856
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601988",
+    "name": "中国银行",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601988",
+    "name": "中国银行",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601988",
+    "name": "中国银行",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601988",
+    "name": "中国银行",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000001",
+    "name": "平安银行",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000001",
+    "name": "平安银行",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000001",
+    "name": "平安银行",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000001",
+    "name": "平安银行",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5214506932736266
+    }
+  },
+  {
+    "category": "个股",
+    "code": "000001",
+    "name": "平安银行",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300059",
+    "name": "东方财富",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300059",
+    "name": "东方财富",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300059",
+    "name": "东方财富",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300059",
+    "name": "东方财富",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "300059",
+    "name": "东方财富",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002304",
+    "name": "洋河股份",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002304",
+    "name": "洋河股份",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5319148936170213
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002304",
+    "name": "洋河股份",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002304",
+    "name": "洋河股份",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "002304",
+    "name": "洋河股份",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600028",
+    "name": "中国石化",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600028",
+    "name": "中国石化",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600028",
+    "name": "中国石化",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.572463768115942
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600028",
+    "name": "中国石化",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "600028",
+    "name": "中国石化",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601857",
+    "name": "中国石油",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5496825371611774
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601857",
+    "name": "中国石油",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": -1,
+      "score": 0.5921052631578947
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601857",
+    "name": "中国石油",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601857",
+    "name": "中国石油",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601857",
+    "name": "中国石油",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 1,
+      "score": 0.5239085979392054
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601668",
+    "name": "中国建筑",
+    "horizon": 1,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601668",
+    "name": "中国建筑",
+    "horizon": 3,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601668",
+    "name": "中国建筑",
+    "horizon": 5,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5059874244062637
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601668",
+    "name": "中国建筑",
+    "horizon": 10,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  },
+  {
+    "category": "个股",
+    "code": "601668",
+    "name": "中国建筑",
+    "horizon": 20,
+    "latest": {
+      "date": "2026-11-05",
+      "direction": 0,
+      "score": 0.5
+    }
+  }
+]
