@@ -122,6 +122,18 @@ def cmd_fullfit(args) -> int:
     return 0
 
 
+def cmd_table(args) -> int:
+    from .fullfit_table import build_from_json
+
+    cfg = _load_cfg(args)
+    src = cfg.report_path / "fullfit" / "fullfit.json"
+    if not src.exists():
+        print(f"找不到 {src}，请先运行 fullfit", file=sys.stderr)
+        return 2
+    print(build_from_json(src, cfg=cfg))
+    return 0
+
+
 def cmd_crosssection(args) -> int:
     from .crosssection import XSConfig, evaluate, load_panel
     from .crosssection_report import build_xs_html
@@ -221,6 +233,9 @@ def build_parser() -> argparse.ArgumentParser:
     acc.add_argument("--min-fit-signals", type=int, default=60)
     acc.add_argument("--min-calibration-predictions", type=int, default=30)
     acc.set_defaults(func=cmd_accuracy)
+
+    tb = sub.add_parser("table", help="把 fullfit 结果做成按类型区分的全市场明细 HTML")
+    tb.set_defaults(func=cmd_table)
 
     xs = sub.add_parser("xs", help="横截面：相对强弱/行业轮动 IC 检验")
     xs.add_argument("--start", default="2015-01-01")
