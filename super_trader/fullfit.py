@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from datetime import datetime
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -126,7 +127,8 @@ def fit_symbol(p: PreparedSymbol, config: FullFitConfig) -> dict:
         pool = [k for _, _, k in scored[:config.candidate_pool]]
 
         # 贪心叠加：先取最好的一条，不达标就换/叠加下一条
-        floor = max(config.min_signals, int(config.min_coverage * idx.size))
+        # 用 ceil：int() 截断会让 10% 变成 9.96%，达不到「至少 10%」的要求。
+        floor = max(config.min_signals, math.ceil(config.min_coverage * idx.size))
         chosen: list[str] = []
         cur_acc, cur_n = None, 0
         for key in pool:

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-06T10:28:18",
+  "generated_at": "2026-11-06T10:34:59",
   "method": "fullfit_recency_weighted_v1",
   "config": {
     "horizons": [
@@ -27,9 +27,9 @@
   "scope": "in_sample_full_history_no_split",
   "totals": {
     "symbols": 62,
-    "predictions": 38988,
-    "weighted_accuracy": 0.6213915486770246,
-    "plain_accuracy": 0.5727403303580589,
+    "predictions": 39518,
+    "weighted_accuracy": 0.6212570436845644,
+    "plain_accuracy": 0.5729287919429121,
     "median_accuracy": 0.6192329946774684,
     "inverted": 0,
     "below_50": 0
@@ -583,58 +583,6 @@
     },
     {
       "category": "指数",
-      "code": "931775",
-      "name": "房地产",
-      "horizon": 3,
-      "rules": [
-        "均值回归__rsi14_extreme"
-      ],
-      "inverted": false,
-      "weighted_accuracy": 0.6282802117193542,
-      "plain_accuracy": 0.625,
-      "eff_n": 81.09441093984483,
-      "predictions": 112,
-      "eligible": 1125,
-      "coverage": 0.09955555555555555,
-      "up": 77,
-      "down": 35,
-      "flat_actual": 0,
-      "recent_accuracy": 0.5833333333333334,
-      "recent_predictions": 24,
-      "start": "2022-03-11",
-      "end": "2026-11-02",
-      "unfiltered_accuracy": 0.06222222222222222,
-      "always_up_accuracy": 0.45422222222222225,
-      "rank": 22
-    },
-    {
-      "category": "指数",
-      "code": "399006",
-      "name": "创业板指",
-      "horizon": 10,
-      "rules": [
-        "突破__donchian55"
-      ],
-      "inverted": false,
-      "weighted_accuracy": 0.6278600502257105,
-      "plain_accuracy": 0.5974025974025974,
-      "eff_n": 200.37216580237697,
-      "predictions": 385,
-      "eligible": 3859,
-      "coverage": 0.09976677895827935,
-      "up": 237,
-      "down": 148,
-      "flat_actual": 0,
-      "recent_accuracy": 0.6666666666666666,
-      "recent_predictions": 21,
-      "start": "2010-12-01",
-      "end": "2026-10-22",
-      "unfiltered_accuracy": 0.05960093288416688,
-      "always_up_accuracy": 0.5216377299818605,
-      "rank": 23
-    },
-    {
-      "category": "指数",
       "code": "399998",
       "name": "中证煤炭",
       "horizon": 20,
@@ -657,7 +605,33 @@
       "end": "2026-10-08",
       "unfiltered_accuracy": 0.12166030534351145,
       "always_up_accuracy": 0.49833015267175573,
-      "rank": 24
+      "rank": 22
+    },
+    {
+      "category": "指数",
+      "code": "399006",
+      "name": "创业板指",
+      "horizon": 10,
+      "rules": [
+        "突破__keltner_break"
+      ],
+      "inverted": false,
+      "weighted_accuracy": 0.6267473577958775,
+      "plain_accuracy": 0.5908045977011495,
+      "eff_n": 452.2296392572835,
+      "predictions": 870,
+      "eligible": 3859,
+      "coverage": 0.22544700699663126,
+      "up": 461,
+      "down": 409,
+      "flat_actual": 0,
+      "recent_accuracy": 0.8108108108108109,
+      "recent_predictions": 37,
+      "start": "2010-12-01",
+      "end": "2026-10-22",
+      "unfiltered_accuracy": 0.13319512827157295,
+      "always_up_accuracy": 0.5216377299818605,
+      "rank": 23
     },
     {
       "category": "个股",
@@ -683,7 +657,7 @@
       "end": "2026-10-08",
       "unfiltered_accuracy": 0.0790899241603467,
       "always_up_accuracy": 0.5249187432286024,
-      "rank": 25
+      "rank": 24
     },
     {
       "category": "个股",
@@ -709,7 +683,7 @@
       "end": "2026-10-22",
       "unfiltered_accuracy": 0.0651703091159677,
       "always_up_accuracy": 0.5014766686355582,
-      "rank": 26
+      "rank": 25
     },
     {
       "category": "指数",
@@ -735,6 +709,32 @@
       "end": "2026-10-22",
       "unfiltered_accuracy": 0.10419485791610285,
       "always_up_accuracy": 0.5549971003286294,
+      "rank": 26
+    },
+    {
+      "category": "指数",
+      "code": "931775",
+      "name": "房地产",
+      "horizon": 3,
+      "rules": [
+        "连续__consec_dn3_follow"
+      ],
+      "inverted": false,
+      "weighted_accuracy": 0.6210535946166542,
+      "plain_accuracy": 0.6178343949044586,
+      "eff_n": 109.2063528174536,
+      "predictions": 157,
+      "eligible": 1125,
+      "coverage": 0.13955555555555554,
+      "up": 0,
+      "down": 157,
+      "flat_actual": 0,
+      "recent_accuracy": 0.6774193548387096,
+      "recent_predictions": 31,
+      "start": "2022-03-11",
+      "end": "2026-11-02",
+      "unfiltered_accuracy": 0.08622222222222223,
+      "always_up_accuracy": 0.45422222222222225,
       "rank": 27
     },
     {
