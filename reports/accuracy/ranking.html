@@ -1,0 +1,4202 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Super_Trader · 标的准确率排行</title>
+<style>
+:root{--bg:#f5f7fa;--panel:#fff;--ink:#121a2b;--muted:#6b7280;--line:#e3e8ef;
+--accent:#1e3a8a;--pos:#047857;--neg:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}
+header{background:linear-gradient(150deg,#0d1b36,#1e3a8a 65%,#2f5bb7);color:#fff;padding:34px 40px 28px}
+header .in,main{max-width:1320px;margin:0 auto}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.72}
+h1{margin:8px 0 6px;font-size:29px}
+header p{margin:0;opacity:.85;max-width:820px;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px;margin-top:24px}
+.kpi{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.17);border-radius:12px;padding:13px 15px}
+.kpi-k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.kpi-v{font-size:25px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi-d{font-size:12px;opacity:.72}
+main{padding:26px 40px 70px}
+section{margin-bottom:30px}
+h2{font-size:18px;margin:0 0 10px;display:flex;gap:9px;align-items:center}
+h2 .n{display:inline-flex;width:25px;height:25px;border-radius:7px;background:var(--accent);
+color:#fff;font-size:12.5px;align-items:center;justify-content:center;font-weight:700}
+.lead{color:var(--muted);margin:-2px 0 12px;font-size:13.5px;max-width:1000px}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+input[type=search]{padding:8px 12px;border:1px solid var(--line);border-radius:9px;
+font-size:14px;min-width:230px;background:#fff}
+button.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;
+font-size:12.5px;cursor:pointer;color:#374151}
+button.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.table-wrap{max-height:74vh;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+thead th{position:sticky;top:0;background:#f8fafc;font-size:12px;color:#374151;z-index:2}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--accent)}
+tbody tr:hover{background:#f8faff}
+tr.small td{opacity:.62}
+tr.small td.acc b::after{content:" ·小样本";font-size:10.5px;color:#b45309;font-weight:400}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#475569}
+.muted{color:var(--muted)}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+.tag{font-size:10.5px;background:#eef2ff;color:var(--accent);padding:1px 7px;border-radius:999px;margin-left:4px}
+.acc{white-space:nowrap}
+.bar{display:inline-block;width:76px;height:6px;background:#eef1f6;border-radius:3px;
+vertical-align:middle;margin-right:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#1e3a8a)}
+.note{background:#fffbeb;border-left:4px solid #b45309;padding:13px 16px;border-radius:0 10px 10px 0;
+font-size:13.5px;color:#3f3f46}
+footer{color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+</style></head><body>
+<header><div class="in">
+  <div class="eyebrow">Super_Trader · 准确率优先模式 · 测试段回顾</div>
+  <h1>各标的历史预测准确率排行</h1>
+  <p>按标的汇总其全部持有期的测试段结果。准确率 = 正确次数 ÷ 发出涨跌预测的次数，
+  <b>中性（弃权）不计入分母</b>；默认按准确率从高到低。</p>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-k">标的数</div><div class="kpi-v">62</div>
+      <div class="kpi-d">共 310 个标的×持有期模型</div></div>
+    <div class="kpi"><div class="kpi-k">总准确率</div><div class="kpi-v">50.38%</div>
+      <div class="kpi-d">31,148 / 61,821 次预测</div></div>
+    <div class="kpi"><div class="kpi-k">标的准确率中位数</div><div class="kpi-v">51.15%</div>
+      <div class="kpi-d">一半标的在此之上</div></div>
+    <div class="kpi"><div class="kpi-k">覆盖率</div><div class="kpi-v">21.44%</div>
+      <div class="kpi-d">其余 78.56% 保持中性</div></div>
+  </div>
+</div></header>
+<main>
+  <section>
+    <h2><span class="n">1</span>标的排行（全部持有期合并）</h2>
+    <p class="lead">点击表头可按该列排序；「小样本」= 预测次数少于 30，准确率波动很大，请同时看 95% 区间。</p>
+    <div class="controls">
+      <input type="search" id="q" placeholder="搜索代码 / 名称 / 类别">
+      <span class="muted" style="font-size:12.5px">最少预测次数：</span>
+      <button class="chip on" data-min="0">全部</button>
+      <button class="chip" data-min="30">≥30</button>
+      <button class="chip" data-min="100">≥100</button>
+      <button class="chip" data-min="300">≥300</button>
+      <span class="muted" id="status" style="font-size:12.5px"></span>
+    </div>
+    <div class="table-wrap"><table id="rank">
+      <thead><tr>
+        <th>#</th><th>标的</th>
+        <th class="sortable" data-key="acc">准确率</th>
+        <th class="sortable" data-key="n">预测次数</th>
+        <th>正确次数</th><th>95% 区间</th><th>覆盖率</th>
+        <th>对照（多数方向）</th>
+        <th class="sortable" data-key="edge">相对对照</th>
+        <th>有效持有期</th>
+      </tr></thead>
+      <tbody><tr class="row" data-acc="0.5956521739130435"
+          data-n="230" data-cov="0.07874015748031496"
+          data-edge="8.212940773707633">
+          <td class="num muted">1</td>
+          <td><span class="mono">512880</span> <b>证券ETF国泰</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:59.6%"></i></div>
+              <b>59.57%</b></td>
+          <td class="num"><b>230</b></td>
+          <td class="num">137</td>
+          <td class="num muted">[53.12%, 65.70%]</td>
+          <td class="num">7.87%</td>
+          <td class="num muted">51.35%</td>
+          <td class="num pos">8.21pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5940983606557377"
+          data-n="1525" data-cov="0.9585166561910748"
+          data-edge="11.892551338986724">
+          <td class="num muted">2</td>
+          <td><span class="mono">515790</span> <b>光伏ETF华泰柏瑞</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:59.4%"></i></div>
+              <b>59.41%</b></td>
+          <td class="num"><b>1,525</b></td>
+          <td class="num">906</td>
+          <td class="num muted">[56.92%, 61.85%]</td>
+          <td class="num">95.85%</td>
+          <td class="num muted">47.52%</td>
+          <td class="num pos">11.89pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5878084179970973"
+          data-n="1378" data-cov="0.4864101659018708"
+          data-edge="7.704244552974815">
+          <td class="num muted">3</td>
+          <td><span class="mono">159949</span> <b>创业板50ETF华安</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:58.8%"></i></div>
+              <b>58.78%</b></td>
+          <td class="num"><b>1,378</b></td>
+          <td class="num">810</td>
+          <td class="num muted">[56.16%, 61.35%]</td>
+          <td class="num">48.64%</td>
+          <td class="num muted">51.08%</td>
+          <td class="num pos">7.70pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5807860262008734"
+          data-n="229" data-cov="0.035553485483620556"
+          data-edge="7.713752441543631">
+          <td class="num muted">4</td>
+          <td><span class="mono">000905</span> <b>中证500</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:58.1%"></i></div>
+              <b>58.08%</b></td>
+          <td class="num"><b>229</b></td>
+          <td class="num">133</td>
+          <td class="num muted">[51.61%, 64.28%]</td>
+          <td class="num">3.56%</td>
+          <td class="num muted">50.36%</td>
+          <td class="num pos">7.71pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5796178343949044"
+          data-n="314" data-cov="0.09526699029126214"
+          data-edge="4.624404798713744">
+          <td class="num muted">5</td>
+          <td><span class="mono">399975</span> <b>证券公司</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:58.0%"></i></div>
+              <b>57.96%</b></td>
+          <td class="num"><b>314</b></td>
+          <td class="num">182</td>
+          <td class="num muted">[52.44%, 63.29%]</td>
+          <td class="num">9.53%</td>
+          <td class="num muted">53.34%</td>
+          <td class="num pos">4.62pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5621301775147929"
+          data-n="1014" data-cov="0.2392638036809816"
+          data-edge="9.1625222347261">
+          <td class="num muted">6</td>
+          <td><span class="mono">159915</span> <b>创业板ETF易方达</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:56.2%"></i></div>
+              <b>56.21%</b></td>
+          <td class="num"><b>1,014</b></td>
+          <td class="num">570</td>
+          <td class="num muted">[53.14%, 59.24%]</td>
+          <td class="num">23.93%</td>
+          <td class="num muted">47.05%</td>
+          <td class="num pos">9.16pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5608108108108109"
+          data-n="444" data-cov="0.12718418791177313"
+          data-edge="6.267274148969943">
+          <td class="num muted">7</td>
+          <td><span class="mono">399417</span> <b>新能源车</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:56.1%"></i></div>
+              <b>56.08%</b></td>
+          <td class="num"><b>444</b></td>
+          <td class="num">249</td>
+          <td class="num muted">[51.43%, 60.63%]</td>
+          <td class="num">12.72%</td>
+          <td class="num muted">49.81%</td>
+          <td class="num pos">6.27pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5560975609756098"
+          data-n="410" data-cov="0.12439320388349515"
+          data-edge="2.788154155813405">
+          <td class="num muted">8</td>
+          <td><span class="mono">399986</span> <b>中证银行</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:55.6%"></i></div>
+              <b>55.61%</b></td>
+          <td class="num"><b>410</b></td>
+          <td class="num">228</td>
+          <td class="num muted">[50.77%, 60.34%]</td>
+          <td class="num">12.44%</td>
+          <td class="num muted">52.82%</td>
+          <td class="num pos">2.79pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5542168674698795"
+          data-n="1743" data-cov="0.2847573925829113"
+          data-edge="8.256190912973905">
+          <td class="num muted">9</td>
+          <td><span class="mono">399005</span> <b>中小100</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:55.4%"></i></div>
+              <b>55.42%</b></td>
+          <td class="num"><b>1,743</b></td>
+          <td class="num">966</td>
+          <td class="num muted">[53.08%, 57.74%]</td>
+          <td class="num">28.48%</td>
+          <td class="num muted">47.17%</td>
+          <td class="num pos">8.26pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5524064171122994"
+          data-n="1870" data-cov="0.28372022454862694"
+          data-edge="8.130946672540823">
+          <td class="num muted">10</td>
+          <td><span class="mono">399001</span> <b>深证成指</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:55.2%"></i></div>
+              <b>55.24%</b></td>
+          <td class="num"><b>1,870</b></td>
+          <td class="num">1,033</td>
+          <td class="num muted">[52.98%, 57.48%]</td>
+          <td class="num">28.37%</td>
+          <td class="num muted">47.11%</td>
+          <td class="num pos">8.13pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5517241379310345"
+          data-n="203" data-cov="0.03151684521037106"
+          data-edge="4.155490955034824">
+          <td class="num muted">11</td>
+          <td><span class="mono">000852</span> <b>中证1000</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:55.2%"></i></div>
+              <b>55.17%</b></td>
+          <td class="num"><b>203</b></td>
+          <td class="num">112</td>
+          <td class="num muted">[48.30%, 61.85%]</td>
+          <td class="num">3.15%</td>
+          <td class="num muted">51.02%</td>
+          <td class="num pos">4.16pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5475708502024291"
+          data-n="988" data-cov="0.2332389046270066"
+          data-edge="6.362373027797208">
+          <td class="num muted">12</td>
+          <td><span class="mono">000813</span> <b>细分化工</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:54.8%"></i></div>
+              <b>54.76%</b></td>
+          <td class="num"><b>988</b></td>
+          <td class="num">541</td>
+          <td class="num muted">[51.64%, 57.84%]</td>
+          <td class="num">23.32%</td>
+          <td class="num muted">48.39%</td>
+          <td class="num pos">6.36pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5455764075067024"
+          data-n="746" data-cov="0.20048374092985757"
+          data-edge="0.88927203258371">
+          <td class="num muted">13</td>
+          <td><span class="mono">000333</span> <b>美的集团</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:54.6%"></i></div>
+              <b>54.56%</b></td>
+          <td class="num"><b>746</b></td>
+          <td class="num">407</td>
+          <td class="num muted">[50.97%, 58.10%]</td>
+          <td class="num">20.05%</td>
+          <td class="num muted">53.67%</td>
+          <td class="num pos">0.89pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5424107142857143"
+          data-n="896" data-cov="0.1375287797390637"
+          data-edge="6.6432203157548555">
+          <td class="num muted">14</td>
+          <td><span class="mono">600276</span> <b>恒瑞医药</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:54.2%"></i></div>
+              <b>54.24%</b></td>
+          <td class="num"><b>896</b></td>
+          <td class="num">486</td>
+          <td class="num muted">[50.97%, 57.48%]</td>
+          <td class="num">13.75%</td>
+          <td class="num muted">47.60%</td>
+          <td class="num pos">6.64pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5370919881305638"
+          data-n="337" data-cov="0.051130329236838114"
+          data-edge="3.4133408248906982">
+          <td class="num muted">15</td>
+          <td><span class="mono">000001</span> <b>上证指数</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:53.7%"></i></div>
+              <b>53.71%</b></td>
+          <td class="num"><b>337</b></td>
+          <td class="num">181</td>
+          <td class="num muted">[48.37%, 58.96%]</td>
+          <td class="num">5.11%</td>
+          <td class="num muted">50.30%</td>
+          <td class="num pos">3.41pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5362247412518482"
+          data-n="2029" data-cov="0.7129304286718201"
+          data-edge="-0.6291070413647293">
+          <td class="num muted">16</td>
+          <td><span class="mono">512100</span> <b>中证1000ETF南方</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:53.6%"></i></div>
+              <b>53.62%</b></td>
+          <td class="num"><b>2,029</b></td>
+          <td class="num">1,088</td>
+          <td class="num muted">[51.45%, 55.78%]</td>
+          <td class="num">71.29%</td>
+          <td class="num muted">54.25%</td>
+          <td class="num neg">-0.63pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5353675450762829"
+          data-n="721" data-cov="0.525893508388038"
+          data-edge="-1.6784169001032856">
+          <td class="num muted">17</td>
+          <td><span class="mono">931775</span> <b>房地产</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:53.5%"></i></div>
+              <b>53.54%</b></td>
+          <td class="num"><b>721</b></td>
+          <td class="num">386</td>
+          <td class="num muted">[49.89%, 57.15%]</td>
+          <td class="num">52.59%</td>
+          <td class="num muted">55.22%</td>
+          <td class="num neg">-1.68pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5342136854741897"
+          data-n="833" data-cov="0.2290979097909791"
+          data-edge="2.8438107916433863">
+          <td class="num muted">18</td>
+          <td><span class="mono">399967</span> <b>中证军工</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:53.4%"></i></div>
+              <b>53.42%</b></td>
+          <td class="num"><b>833</b></td>
+          <td class="num">445</td>
+          <td class="num muted">[50.03%, 56.79%]</td>
+          <td class="num">22.91%</td>
+          <td class="num muted">50.58%</td>
+          <td class="num pos">2.84pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5268389662027833"
+          data-n="503" data-cov="0.11400725294650951"
+          data-edge="-0.9199111766391765">
+          <td class="num muted">19</td>
+          <td><span class="mono">002594</span> <b>比亚迪</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:52.7%"></i></div>
+              <b>52.68%</b></td>
+          <td class="num"><b>503</b></td>
+          <td class="num">265</td>
+          <td class="num muted">[48.32%, 57.01%]</td>
+          <td class="num">11.40%</td>
+          <td class="num muted">53.60%</td>
+          <td class="num neg">-0.92pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5256410256410257"
+          data-n="936" data-cov="0.44763271162123386"
+          data-edge="13.539712320200126">
+          <td class="num muted">20</td>
+          <td><span class="mono">512690</span> <b>酒ETF鹏华</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:52.6%"></i></div>
+              <b>52.56%</b></td>
+          <td class="num"><b>936</b></td>
+          <td class="num">492</td>
+          <td class="num muted">[49.36%, 55.75%]</td>
+          <td class="num">44.76%</td>
+          <td class="num muted">39.02%</td>
+          <td class="num pos">13.54pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5235294117647059"
+          data-n="510" data-cov="0.21601016518424396"
+          data-edge="4.745994967237216">
+          <td class="num muted">21</td>
+          <td><span class="mono">300750</span> <b>宁德时代</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:52.4%"></i></div>
+              <b>52.35%</b></td>
+          <td class="num"><b>510</b></td>
+          <td class="num">267</td>
+          <td class="num muted">[48.02%, 56.65%]</td>
+          <td class="num">21.60%</td>
+          <td class="num muted">47.61%</td>
+          <td class="num pos">4.75pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5228426395939086"
+          data-n="788" data-cov="0.39677744209466265"
+          data-edge="-3.909089514929376">
+          <td class="num muted">22</td>
+          <td><span class="mono">931079</span> <b>5G通信</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:52.3%"></i></div>
+              <b>52.28%</b></td>
+          <td class="num"><b>788</b></td>
+          <td class="num">412</td>
+          <td class="num muted">[48.79%, 55.75%]</td>
+          <td class="num">39.68%</td>
+          <td class="num muted">56.19%</td>
+          <td class="num neg">-3.91pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5198329853862212"
+          data-n="479" data-cov="0.2539766702014846"
+          data-edge="4.210233851453515">
+          <td class="num muted">23</td>
+          <td><span class="mono">000688</span> <b>科创50</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:52.0%"></i></div>
+              <b>51.98%</b></td>
+          <td class="num"><b>479</b></td>
+          <td class="num">249</td>
+          <td class="num muted">[47.51%, 56.42%]</td>
+          <td class="num">25.40%</td>
+          <td class="num muted">47.77%</td>
+          <td class="num pos">4.21pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5194805194805194"
+          data-n="462" data-cov="0.11693242217160213"
+          data-edge="2.3656677415219485">
+          <td class="num muted">24</td>
+          <td><span class="mono">510500</span> <b>中证500ETF南方</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.9%"></i></div>
+              <b>51.95%</b></td>
+          <td class="num"><b>462</b></td>
+          <td class="num">240</td>
+          <td class="num muted">[47.39%, 56.47%]</td>
+          <td class="num">11.69%</td>
+          <td class="num muted">49.58%</td>
+          <td class="num pos">2.37pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5190082644628099"
+          data-n="605" data-cov="0.10132306146374141"
+          data-edge="11.48883515503999">
+          <td class="num muted">25</td>
+          <td><span class="mono">601988</span> <b>中国银行</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.9%"></i></div>
+              <b>51.90%</b></td>
+          <td class="num"><b>605</b></td>
+          <td class="num">314</td>
+          <td class="num muted">[47.92%, 55.86%]</td>
+          <td class="num">10.13%</td>
+          <td class="num muted">40.41%</td>
+          <td class="num pos">11.49pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5177664974619289"
+          data-n="788" data-cov="0.16481907550721606"
+          data-edge="-2.354285204654205">
+          <td class="num muted">26</td>
+          <td><span class="mono">300059</span> <b>东方财富</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.8%"></i></div>
+              <b>51.78%</b></td>
+          <td class="num"><b>788</b></td>
+          <td class="num">408</td>
+          <td class="num muted">[48.29%, 55.25%]</td>
+          <td class="num">16.48%</td>
+          <td class="num muted">54.13%</td>
+          <td class="num neg">-2.35pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5177304964539007"
+          data-n="423" data-cov="0.1518305814788227"
+          data-edge="3.6754186331861893">
+          <td class="num muted">27</td>
+          <td><span class="mono">513050</span> <b>中概互联网ETF易方达</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.8%"></i></div>
+              <b>51.77%</b></td>
+          <td class="num"><b>423</b></td>
+          <td class="num">219</td>
+          <td class="num muted">[47.02%, 56.50%]</td>
+          <td class="num">15.18%</td>
+          <td class="num muted">48.10%</td>
+          <td class="num pos">3.68pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5170807453416149"
+          data-n="644" data-cov="0.1527514231499051"
+          data-edge="0.42723961955047907">
+          <td class="num muted">28</td>
+          <td><span class="mono">000819</span> <b>有色金属</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.7%"></i></div>
+              <b>51.71%</b></td>
+          <td class="num"><b>644</b></td>
+          <td class="num">333</td>
+          <td class="num muted">[47.85%, 55.55%]</td>
+          <td class="num">15.28%</td>
+          <td class="num muted">51.28%</td>
+          <td class="num pos">0.43pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5138662316476346"
+          data-n="613" data-cov="0.132655269422203"
+          data-edge="0.16394409096990303">
+          <td class="num muted">29</td>
+          <td><span class="mono">399303</span> <b>国证2000</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.4%"></i></div>
+              <b>51.39%</b></td>
+          <td class="num"><b>613</b></td>
+          <td class="num">315</td>
+          <td class="num muted">[47.43%, 55.32%]</td>
+          <td class="num">13.27%</td>
+          <td class="num muted">51.22%</td>
+          <td class="num pos">0.16pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5136054421768708"
+          data-n="882" data-cov="0.2099500119019281"
+          data-edge="3.514793206023187">
+          <td class="num muted">30</td>
+          <td><span class="mono">510300</span> <b>沪深300ETF华泰柏瑞</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.4%"></i></div>
+              <b>51.36%</b></td>
+          <td class="num"><b>882</b></td>
+          <td class="num">453</td>
+          <td class="num muted">[48.06%, 54.65%]</td>
+          <td class="num">21.00%</td>
+          <td class="num muted">47.85%</td>
+          <td class="num pos">3.51pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5119113573407202"
+          data-n="1805" data-cov="0.28023598820059"
+          data-edge="1.3231028199282568">
+          <td class="num muted">31</td>
+          <td><span class="mono">000949</span> <b>中证农业</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.2%"></i></div>
+              <b>51.19%</b></td>
+          <td class="num"><b>1,805</b></td>
+          <td class="num">924</td>
+          <td class="num muted">[48.89%, 53.49%]</td>
+          <td class="num">28.02%</td>
+          <td class="num muted">49.87%</td>
+          <td class="num pos">1.32pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5111695137976346"
+          data-n="761" data-cov="0.26052721670660733"
+          data-edge="0.6205460391267015">
+          <td class="num muted">32</td>
+          <td><span class="mono">512660</span> <b>军工ETF国泰</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:51.1%"></i></div>
+              <b>51.12%</b></td>
+          <td class="num"><b>761</b></td>
+          <td class="num">389</td>
+          <td class="num muted">[47.57%, 54.65%]</td>
+          <td class="num">26.05%</td>
+          <td class="num muted">50.50%</td>
+          <td class="num pos">0.62pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5078534031413613"
+          data-n="573" data-cov="0.35348550277606416"
+          data-edge="4.332533404820893">
+          <td class="num muted">33</td>
+          <td><span class="mono">588000</span> <b>科创50ETF华夏</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:50.8%"></i></div>
+              <b>50.79%</b></td>
+          <td class="num"><b>573</b></td>
+          <td class="num">291</td>
+          <td class="num muted">[46.70%, 54.86%]</td>
+          <td class="num">35.35%</td>
+          <td class="num muted">46.45%</td>
+          <td class="num pos">4.33pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5055230669265757"
+          data-n="1539" data-cov="0.24024352169840774"
+          data-edge="5.001260798183638">
+          <td class="num muted">34</td>
+          <td><span class="mono">000001</span> <b>平安银行</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:50.6%"></i></div>
+              <b>50.55%</b></td>
+          <td class="num"><b>1,539</b></td>
+          <td class="num">778</td>
+          <td class="num muted">[48.06%, 53.05%]</td>
+          <td class="num">24.02%</td>
+          <td class="num muted">45.55%</td>
+          <td class="num pos">5.00pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.5021164021164021"
+          data-n="1890" data-cov="0.3936679858362841"
+          data-edge="1.7009132797510151">
+          <td class="num muted">35</td>
+          <td><span class="mono">399006</span> <b>创业板指</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:50.2%"></i></div>
+              <b>50.21%</b></td>
+          <td class="num"><b>1,890</b></td>
+          <td class="num">949</td>
+          <td class="num muted">[47.96%, 52.46%]</td>
+          <td class="num">39.37%</td>
+          <td class="num muted">48.51%</td>
+          <td class="num pos">1.70pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4956579826319305"
+          data-n="1497" data-cov="0.30205811138014527"
+          data-edge="6.345459280142202">
+          <td class="num muted">36</td>
+          <td><span class="mono">002304</span> <b>洋河股份</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:49.6%"></i></div>
+              <b>49.57%</b></td>
+          <td class="num"><b>1,497</b></td>
+          <td class="num">742</td>
+          <td class="num muted">[47.04%, 52.10%]</td>
+          <td class="num">30.21%</td>
+          <td class="num muted">43.22%</td>
+          <td class="num pos">6.35pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4936998854524628"
+          data-n="873" data-cov="0.13553795994410806"
+          data-edge="2.746793389214608">
+          <td class="num muted">37</td>
+          <td><span class="mono">000300</span> <b>沪深300</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:49.4%"></i></div>
+              <b>49.37%</b></td>
+          <td class="num"><b>873</b></td>
+          <td class="num">431</td>
+          <td class="num muted">[46.06%, 52.68%]</td>
+          <td class="num">13.55%</td>
+          <td class="num muted">46.62%</td>
+          <td class="num pos">2.75pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4935064935064935"
+          data-n="1155" data-cov="0.2438766891891892"
+          data-edge="0.6597709722709733">
+          <td class="num muted">38</td>
+          <td><span class="mono">002415</span> <b>海康威视</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:49.4%"></i></div>
+              <b>49.35%</b></td>
+          <td class="num"><b>1,155</b></td>
+          <td class="num">570</td>
+          <td class="num muted">[46.47%, 52.23%]</td>
+          <td class="num">24.39%</td>
+          <td class="num muted">48.69%</td>
+          <td class="num pos">0.66pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.492089925062448"
+          data-n="1201" data-cov="0.19815212011219271"
+          data-edge="-1.8551883220013665">
+          <td class="num muted">39</td>
+          <td><span class="mono">600900</span> <b>长江电力</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:49.2%"></i></div>
+              <b>49.21%</b></td>
+          <td class="num"><b>1,201</b></td>
+          <td class="num">591</td>
+          <td class="num muted">[46.39%, 52.03%]</td>
+          <td class="num">19.82%</td>
+          <td class="num muted">51.06%</td>
+          <td class="num neg">-1.86pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4918793503480278"
+          data-n="431" data-cov="0.12635590735854588"
+          data-edge="-0.26970202177886704">
+          <td class="num muted">40</td>
+          <td><span class="mono">399440</span> <b>国证钢铁</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:49.2%"></i></div>
+              <b>49.19%</b></td>
+          <td class="num"><b>431</b></td>
+          <td class="num">212</td>
+          <td class="num muted">[44.50%, 53.89%]</td>
+          <td class="num">12.64%</td>
+          <td class="num muted">49.46%</td>
+          <td class="num neg">-0.27pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4906937394247039"
+          data-n="591" data-cov="0.09126003705991352"
+          data-edge="3.300380736787872">
+          <td class="num muted">41</td>
+          <td><span class="mono">600030</span> <b>中信证券</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:49.1%"></i></div>
+              <b>49.07%</b></td>
+          <td class="num"><b>591</b></td>
+          <td class="num">290</td>
+          <td class="num muted">[45.06%, 53.09%]</td>
+          <td class="num">9.13%</td>
+          <td class="num muted">45.77%</td>
+          <td class="num pos">3.30pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4861878453038674"
+          data-n="543" data-cov="0.08307833537331702"
+          data-edge="-0.7845202431750742">
+          <td class="num muted">42</td>
+          <td><span class="mono">600028</span> <b>中国石化</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:48.6%"></i></div>
+              <b>48.62%</b></td>
+          <td class="num"><b>543</b></td>
+          <td class="num">264</td>
+          <td class="num muted">[44.44%, 52.82%]</td>
+          <td class="num">8.31%</td>
+          <td class="num muted">49.40%</td>
+          <td class="num neg">-0.78pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4841417910447761"
+          data-n="2144" data-cov="0.37541586412187006"
+          data-edge="-2.837790778204935">
+          <td class="num muted">43</td>
+          <td><span class="mono">601318</span> <b>中国平安</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:48.4%"></i></div>
+              <b>48.41%</b></td>
+          <td class="num"><b>2,144</b></td>
+          <td class="num">1,038</td>
+          <td class="num muted">[46.30%, 50.53%]</td>
+          <td class="num">37.54%</td>
+          <td class="num muted">51.25%</td>
+          <td class="num neg">-2.84pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4821852731591449"
+          data-n="842" data-cov="0.16111748947569843"
+          data-edge="8.168776072133394">
+          <td class="num muted">44</td>
+          <td><span class="mono">399997</span> <b>中证白酒</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:48.2%"></i></div>
+              <b>48.22%</b></td>
+          <td class="num"><b>842</b></td>
+          <td class="num">406</td>
+          <td class="num muted">[44.86%, 51.59%]</td>
+          <td class="num">16.11%</td>
+          <td class="num muted">40.05%</td>
+          <td class="num pos">8.17pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4808444096950743"
+          data-n="1279" data-cov="0.3325533021320853"
+          data-edge="-10.885917844845144">
+          <td class="num muted">45</td>
+          <td><span class="mono">518880</span> <b>黄金ETF华安</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:48.1%"></i></div>
+              <b>48.08%</b></td>
+          <td class="num"><b>1,279</b></td>
+          <td class="num">615</td>
+          <td class="num muted">[45.36%, 50.82%]</td>
+          <td class="num">33.26%</td>
+          <td class="num muted">58.97%</td>
+          <td class="num neg">-10.89pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4798676227247656"
+          data-n="1813" data-cov="0.28614267676767674"
+          data-edge="-0.22977813156384586">
+          <td class="num muted">46</td>
+          <td><span class="mono">000651</span> <b>格力电器</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:48.0%"></i></div>
+              <b>47.99%</b></td>
+          <td class="num"><b>1,813</b></td>
+          <td class="num">870</td>
+          <td class="num muted">[45.69%, 50.29%]</td>
+          <td class="num">28.61%</td>
+          <td class="num muted">48.22%</td>
+          <td class="num neg">-0.23pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.47797563261480785"
+          data-n="1067" data-cov="0.5303180914512923"
+          data-edge="-3.6437886271872113">
+          <td class="num muted">47</td>
+          <td><span class="mono">512480</span> <b>半导体ETF国联安</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:47.8%"></i></div>
+              <b>47.80%</b></td>
+          <td class="num"><b>1,067</b></td>
+          <td class="num">510</td>
+          <td class="num muted">[44.81%, 50.80%]</td>
+          <td class="num">53.03%</td>
+          <td class="num muted">51.44%</td>
+          <td class="num neg">-3.64pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.47649918962722854"
+          data-n="1851" data-cov="0.3319583931133429"
+          data-edge="1.703003611216397">
+          <td class="num muted">48</td>
+          <td><span class="mono">601857</span> <b>中国石油</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:47.6%"></i></div>
+              <b>47.65%</b></td>
+          <td class="num"><b>1,851</b></td>
+          <td class="num">882</td>
+          <td class="num muted">[45.38%, 49.93%]</td>
+          <td class="num">33.20%</td>
+          <td class="num muted">45.95%</td>
+          <td class="num pos">1.70pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4760672703751617"
+          data-n="773" data-cov="0.14432412247946227"
+          data-edge="-3.5321825965390907">
+          <td class="num muted">49</td>
+          <td><span class="mono">000922</span> <b>中证红利</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:47.6%"></i></div>
+              <b>47.61%</b></td>
+          <td class="num"><b>773</b></td>
+          <td class="num">368</td>
+          <td class="num muted">[44.11%, 51.13%]</td>
+          <td class="num">14.43%</td>
+          <td class="num muted">51.14%</td>
+          <td class="num neg">-3.53pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.47606019151846785"
+          data-n="731" data-cov="0.11411177021542304"
+          data-edge="0.5563781902482856">
+          <td class="num muted">50</td>
+          <td><span class="mono">510050</span> <b>上证50ETF华夏</b>
+              <span class="tag">ETF</span></td>
+          <td class="num acc"><div class="bar"><i style="width:47.6%"></i></div>
+              <b>47.61%</b></td>
+          <td class="num"><b>731</b></td>
+          <td class="num">348</td>
+          <td class="num muted">[44.01%, 51.23%]</td>
+          <td class="num">11.41%</td>
+          <td class="num muted">47.05%</td>
+          <td class="num pos">0.56pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.47485536270583"
+          data-n="2247" data-cov="0.3886870783601453"
+          data-edge="-1.8830850752049266">
+          <td class="num muted">51</td>
+          <td><span class="mono">601166</span> <b>兴业银行</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:47.5%"></i></div>
+              <b>47.49%</b></td>
+          <td class="num"><b>2,247</b></td>
+          <td class="num">1,067</td>
+          <td class="num muted">[45.43%, 49.55%]</td>
+          <td class="num">38.87%</td>
+          <td class="num muted">49.37%</td>
+          <td class="num neg">-1.88pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.47459086993970717"
+          data-n="1161" data-cov="0.22215843857634904"
+          data-edge="-1.0292405988344855">
+          <td class="num muted">52</td>
+          <td><span class="mono">399998</span> <b>中证煤炭</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:47.5%"></i></div>
+              <b>47.46%</b></td>
+          <td class="num"><b>1,161</b></td>
+          <td class="num">551</td>
+          <td class="num muted">[44.60%, 50.34%]</td>
+          <td class="num">22.22%</td>
+          <td class="num muted">48.49%</td>
+          <td class="num neg">-1.03pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.46808510638297873"
+          data-n="1645" data-cov="0.2555935363579863"
+          data-edge="6.6593496687515685">
+          <td class="num muted">53</td>
+          <td><span class="mono">000858</span> <b>五粮液</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:46.8%"></i></div>
+              <b>46.81%</b></td>
+          <td class="num"><b>1,645</b></td>
+          <td class="num">770</td>
+          <td class="num muted">[44.41%, 49.22%]</td>
+          <td class="num">25.56%</td>
+          <td class="num muted">40.15%</td>
+          <td class="num pos">6.66pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4677871148459384"
+          data-n="357" data-cov="0.0551266213712168"
+          data-edge="1.2722259997266339">
+          <td class="num muted">54</td>
+          <td><span class="mono">600887</span> <b>伊利股份</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:46.8%"></i></div>
+              <b>46.78%</b></td>
+          <td class="num"><b>357</b></td>
+          <td class="num">167</td>
+          <td class="num muted">[41.66%, 51.96%]</td>
+          <td class="num">5.51%</td>
+          <td class="num muted">45.51%</td>
+          <td class="num pos">1.27pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4626278520849725"
+          data-n="1271" data-cov="0.19535813095604057"
+          data-edge="2.057436299797588">
+          <td class="num muted">55</td>
+          <td><span class="mono">600519</span> <b>贵州茅台</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:46.3%"></i></div>
+              <b>46.26%</b></td>
+          <td class="num"><b>1,271</b></td>
+          <td class="num">588</td>
+          <td class="num muted">[43.54%, 49.01%]</td>
+          <td class="num">19.54%</td>
+          <td class="num muted">44.21%</td>
+          <td class="num pos">2.06pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.46132075471698114"
+          data-n="2120" data-cov="0.3258530587150323"
+          data-edge="-3.4068117093655204">
+          <td class="num muted">56</td>
+          <td><span class="mono">600036</span> <b>招商银行</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:46.1%"></i></div>
+              <b>46.13%</b></td>
+          <td class="num"><b>2,120</b></td>
+          <td class="num">978</td>
+          <td class="num muted">[44.02%, 48.26%]</td>
+          <td class="num">32.59%</td>
+          <td class="num muted">49.54%</td>
+          <td class="num neg">-3.41pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.46030330062444247"
+          data-n="1121" data-cov="0.267797419971333"
+          data-edge="3.6987486004280035">
+          <td class="num muted">57</td>
+          <td><span class="mono">601012</span> <b>隆基绿能</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:46.0%"></i></div>
+              <b>46.03%</b></td>
+          <td class="num"><b>1,121</b></td>
+          <td class="num">516</td>
+          <td class="num muted">[43.13%, 48.96%]</td>
+          <td class="num">26.78%</td>
+          <td class="num muted">42.33%</td>
+          <td class="num pos">3.70pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.45702005730659023"
+          data-n="698" data-cov="0.12959524693650204"
+          data-edge="0.6036024629278658">
+          <td class="num muted">58</td>
+          <td><span class="mono">601899</span> <b>紫金矿业</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:45.7%"></i></div>
+              <b>45.70%</b></td>
+          <td class="num"><b>698</b></td>
+          <td class="num">319</td>
+          <td class="num muted">[42.04%, 49.41%]</td>
+          <td class="num">12.96%</td>
+          <td class="num muted">45.10%</td>
+          <td class="num pos">0.60pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.45521472392638035"
+          data-n="815" data-cov="0.12365346684873312"
+          data-edge="-0.9661622606770892">
+          <td class="num muted">59</td>
+          <td><span class="mono">000016</span> <b>上证50</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:45.5%"></i></div>
+              <b>45.52%</b></td>
+          <td class="num"><b>815</b></td>
+          <td class="num">371</td>
+          <td class="num muted">[42.13%, 48.95%]</td>
+          <td class="num">12.37%</td>
+          <td class="num muted">46.49%</td>
+          <td class="num neg">-0.97pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4533582089552239"
+          data-n="536" data-cov="0.10622275069361871"
+          data-edge="-7.835007483391604">
+          <td class="num muted">60</td>
+          <td><span class="mono">601668</span> <b>中国建筑</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:45.3%"></i></div>
+              <b>45.34%</b></td>
+          <td class="num"><b>536</b></td>
+          <td class="num">243</td>
+          <td class="num muted">[41.17%, 49.57%]</td>
+          <td class="num">10.62%</td>
+          <td class="num muted">53.17%</td>
+          <td class="num neg">-7.84pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4454787234042553"
+          data-n="1504" data-cov="0.3694423974453451"
+          data-edge="3.6242663468121714">
+          <td class="num muted">61</td>
+          <td><span class="mono">399396</span> <b>国证食品</b>
+              <span class="tag">指数</span></td>
+          <td class="num acc"><div class="bar"><i style="width:44.5%"></i></div>
+              <b>44.55%</b></td>
+          <td class="num"><b>1,504</b></td>
+          <td class="num">670</td>
+          <td class="num muted">[42.05%, 47.07%]</td>
+          <td class="num">36.94%</td>
+          <td class="num muted">40.92%</td>
+          <td class="num pos">3.62pp</td>
+          <td class="num">5</td>
+        </tr><tr class="row" data-acc="0.4245152354570637"
+          data-n="1444" data-cov="0.26413023596122187"
+          data-edge="-3.387144828173272">
+          <td class="num muted">62</td>
+          <td><span class="mono">601088</span> <b>中国神华</b>
+              <span class="tag">个股</span></td>
+          <td class="num acc"><div class="bar"><i style="width:42.5%"></i></div>
+              <b>42.45%</b></td>
+          <td class="num"><b>1,444</b></td>
+          <td class="num">613</td>
+          <td class="num muted">[39.93%, 45.02%]</td>
+          <td class="num">26.41%</td>
+          <td class="num muted">45.84%</td>
+          <td class="num neg">-3.39pp</td>
+          <td class="num">5</td>
+        </tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>按标的×持有期明细</h2>
+    <p class="lead">同一标的在不同持有期上准确率差别很大，单独看合并值会掩盖这一点。</p>
+    <div class="controls">
+      <input type="search" id="q2" placeholder="搜索代码 / 名称 / 持有期(H1…)">
+      <span class="muted" id="status2" style="font-size:12.5px"></span>
+    </div>
+    <div class="table-wrap"><table id="detail">
+      <thead><tr><th>标的</th><th class="num">持有期</th><th class="num">准确率</th>
+        <th class="num">预测次数</th><th class="num">正确次数</th>
+        <th class="num">覆盖率</th><th class="num">对照</th></tr></thead>
+      <tbody><tr class="row small" data-acc="1.0"
+          data-n="3">
+          <td><span class="mono">399998</span> 中证煤炭
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>100.00%</b></td>
+          <td class="num"><b>3</b></td>
+          <td class="num">3</td>
+          <td class="num">0.29%</td>
+          <td class="num muted">48.60%</td>
+        </tr><tr class="row small" data-acc="0.7692307692307693"
+          data-n="13">
+          <td><span class="mono">600276</span> 恒瑞医药
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>76.92%</b></td>
+          <td class="num"><b>13</b></td>
+          <td class="num">10</td>
+          <td class="num">0.99%</td>
+          <td class="num muted">47.29%</td>
+        </tr><tr class="row small" data-acc="0.7333333333333333"
+          data-n="15">
+          <td><span class="mono">000001</span> 上证指数
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>73.33%</b></td>
+          <td class="num"><b>15</b></td>
+          <td class="num">11</td>
+          <td class="num">1.13%</td>
+          <td class="num muted">50.79%</td>
+        </tr><tr class="row" data-acc="0.7021276595744681"
+          data-n="47">
+          <td><span class="mono">399986</span> 中证银行
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>70.21%</b></td>
+          <td class="num"><b>47</b></td>
+          <td class="num">33</td>
+          <td class="num">7.26%</td>
+          <td class="num muted">59.97%</td>
+        </tr><tr class="row small" data-acc="0.7"
+          data-n="20">
+          <td><span class="mono">000001</span> 上证指数
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>70.00%</b></td>
+          <td class="num"><b>20</b></td>
+          <td class="num">14</td>
+          <td class="num">1.51%</td>
+          <td class="num muted">51.48%</td>
+        </tr><tr class="row" data-acc="0.6909090909090909"
+          data-n="55">
+          <td><span class="mono">399417</span> 新能源车
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>69.09%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">38</td>
+          <td class="num">7.85%</td>
+          <td class="num muted">52.07%</td>
+        </tr><tr class="row" data-acc="0.6907216494845361"
+          data-n="97">
+          <td><span class="mono">931079</span> 5G通信
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>69.07%</b></td>
+          <td class="num"><b>97</b></td>
+          <td class="num">67</td>
+          <td class="num">24.25%</td>
+          <td class="num muted">43.25%</td>
+        </tr><tr class="row" data-acc="0.6895424836601307"
+          data-n="306">
+          <td><span class="mono">515790</span> 光伏ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>68.95%</b></td>
+          <td class="num"><b>306</b></td>
+          <td class="num">211</td>
+          <td class="num">100.00%</td>
+          <td class="num muted">45.42%</td>
+        </tr><tr class="row small" data-acc="0.6818181818181818"
+          data-n="22">
+          <td><span class="mono">000819</span> 有色金属
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>68.18%</b></td>
+          <td class="num"><b>22</b></td>
+          <td class="num">15</td>
+          <td class="num">2.59%</td>
+          <td class="num muted">50.24%</td>
+        </tr><tr class="row" data-acc="0.676923076923077"
+          data-n="65">
+          <td><span class="mono">002304</span> 洋河股份
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>67.69%</b></td>
+          <td class="num"><b>65</b></td>
+          <td class="num">44</td>
+          <td class="num">6.54%</td>
+          <td class="num muted">36.42%</td>
+        </tr><tr class="row" data-acc="0.6764705882352942"
+          data-n="34">
+          <td><span class="mono">000688</span> 科创50
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>67.65%</b></td>
+          <td class="num"><b>34</b></td>
+          <td class="num">23</td>
+          <td class="num">8.95%</td>
+          <td class="num muted">48.42%</td>
+        </tr><tr class="row" data-acc="0.6727272727272727"
+          data-n="55">
+          <td><span class="mono">000688</span> 科创50
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>67.27%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">37</td>
+          <td class="num">14.40%</td>
+          <td class="num muted">46.34%</td>
+        </tr><tr class="row" data-acc="0.6727272727272727"
+          data-n="55">
+          <td><span class="mono">399975</span> 证券公司
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>67.27%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">37</td>
+          <td class="num">8.37%</td>
+          <td class="num muted">53.73%</td>
+        </tr><tr class="row" data-acc="0.6666666666666666"
+          data-n="51">
+          <td><span class="mono">512880</span> 证券ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>66.67%</b></td>
+          <td class="num"><b>51</b></td>
+          <td class="num">34</td>
+          <td class="num">8.76%</td>
+          <td class="num muted">52.23%</td>
+        </tr><tr class="row small" data-acc="0.6551724137931034"
+          data-n="29">
+          <td><span class="mono">159949</span> 创业板50ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>65.52%</b></td>
+          <td class="num"><b>29</b></td>
+          <td class="num">19</td>
+          <td class="num">4.99%</td>
+          <td class="num muted">51.46%</td>
+        </tr><tr class="row" data-acc="0.6546762589928058"
+          data-n="139">
+          <td><span class="mono">601988</span> 中国银行
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>65.47%</b></td>
+          <td class="num"><b>139</b></td>
+          <td class="num">91</td>
+          <td class="num">11.76%</td>
+          <td class="num muted">37.82%</td>
+        </tr><tr class="row small" data-acc="0.65"
+          data-n="20">
+          <td><span class="mono">588000</span> 科创50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>65.00%</b></td>
+          <td class="num"><b>20</b></td>
+          <td class="num">13</td>
+          <td class="num">6.41%</td>
+          <td class="num muted">46.79%</td>
+        </tr><tr class="row" data-acc="0.64"
+          data-n="50">
+          <td><span class="mono">588000</span> 科创50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>64.00%</b></td>
+          <td class="num"><b>50</b></td>
+          <td class="num">32</td>
+          <td class="num">15.53%</td>
+          <td class="num muted">47.83%</td>
+        </tr><tr class="row" data-acc="0.627906976744186"
+          data-n="86">
+          <td><span class="mono">399967</span> 中证军工
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>62.79%</b></td>
+          <td class="num"><b>86</b></td>
+          <td class="num">54</td>
+          <td class="num">12.03%</td>
+          <td class="num muted">49.51%</td>
+        </tr><tr class="row" data-acc="0.6273062730627307"
+          data-n="271">
+          <td><span class="mono">515790</span> 光伏ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>62.73%</b></td>
+          <td class="num"><b>271</b></td>
+          <td class="num">170</td>
+          <td class="num">85.76%</td>
+          <td class="num muted">47.15%</td>
+        </tr><tr class="row" data-acc="0.6181818181818182"
+          data-n="55">
+          <td><span class="mono">399417</span> 新能源车
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>61.82%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">34</td>
+          <td class="num">7.82%</td>
+          <td class="num muted">51.07%</td>
+        </tr><tr class="row" data-acc="0.6164383561643836"
+          data-n="73">
+          <td><span class="mono">159915</span> 创业板ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>61.64%</b></td>
+          <td class="num"><b>73</b></td>
+          <td class="num">45</td>
+          <td class="num">8.41%</td>
+          <td class="num muted">46.54%</td>
+        </tr><tr class="row" data-acc="0.6132075471698113"
+          data-n="530">
+          <td><span class="mono">159949</span> 创业板50ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>61.32%</b></td>
+          <td class="num"><b>530</b></td>
+          <td class="num">325</td>
+          <td class="num">100.00%</td>
+          <td class="num muted">51.89%</td>
+        </tr><tr class="row" data-acc="0.6111111111111112"
+          data-n="36">
+          <td><span class="mono">399967</span> 中证军工
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>61.11%</b></td>
+          <td class="num"><b>36</b></td>
+          <td class="num">22</td>
+          <td class="num">4.92%</td>
+          <td class="num muted">49.73%</td>
+        </tr><tr class="row" data-acc="0.6111111111111112"
+          data-n="36">
+          <td><span class="mono">399997</span> 中证白酒
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>61.11%</b></td>
+          <td class="num"><b>36</b></td>
+          <td class="num">22</td>
+          <td class="num">3.42%</td>
+          <td class="num muted">42.49%</td>
+        </tr><tr class="row" data-acc="0.6081081081081081"
+          data-n="74">
+          <td><span class="mono">000852</span> 中证1000
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>60.81%</b></td>
+          <td class="num"><b>74</b></td>
+          <td class="num">45</td>
+          <td class="num">5.75%</td>
+          <td class="num muted">49.77%</td>
+        </tr><tr class="row" data-acc="0.6081081081081081"
+          data-n="74">
+          <td><span class="mono">000905</span> 中证500
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>60.81%</b></td>
+          <td class="num"><b>74</b></td>
+          <td class="num">45</td>
+          <td class="num">5.72%</td>
+          <td class="num muted">52.98%</td>
+        </tr><tr class="row" data-acc="0.6071428571428571"
+          data-n="112">
+          <td><span class="mono">512480</span> 半导体ETF国联安
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>60.71%</b></td>
+          <td class="num"><b>112</b></td>
+          <td class="num">68</td>
+          <td class="num">26.92%</td>
+          <td class="num muted">50.96%</td>
+        </tr><tr class="row" data-acc="0.6060606060606061"
+          data-n="33">
+          <td><span class="mono">601988</span> 中国银行
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>60.61%</b></td>
+          <td class="num"><b>33</b></td>
+          <td class="num">20</td>
+          <td class="num">2.77%</td>
+          <td class="num muted">40.10%</td>
+        </tr><tr class="row" data-acc="0.6"
+          data-n="55">
+          <td><span class="mono">000852</span> 中证1000
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>60.00%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">33</td>
+          <td class="num">4.26%</td>
+          <td class="num muted">51.43%</td>
+        </tr><tr class="row" data-acc="0.6"
+          data-n="55">
+          <td><span class="mono">399975</span> 证券公司
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>60.00%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">33</td>
+          <td class="num">8.50%</td>
+          <td class="num muted">55.80%</td>
+        </tr><tr class="row" data-acc="0.6"
+          data-n="50">
+          <td><span class="mono">399998</span> 中证煤炭
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>60.00%</b></td>
+          <td class="num"><b>50</b></td>
+          <td class="num">30</td>
+          <td class="num">4.76%</td>
+          <td class="num muted">47.05%</td>
+        </tr><tr class="row" data-acc="0.6"
+          data-n="40">
+          <td><span class="mono">512880</span> 证券ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>60.00%</b></td>
+          <td class="num"><b>40</b></td>
+          <td class="num">24</td>
+          <td class="num">6.77%</td>
+          <td class="num muted">49.07%</td>
+        </tr><tr class="row" data-acc="0.5982142857142857"
+          data-n="448">
+          <td><span class="mono">159949</span> 创业板50ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>59.82%</b></td>
+          <td class="num"><b>448</b></td>
+          <td class="num">268</td>
+          <td class="num">80.00%</td>
+          <td class="num muted">51.61%</td>
+        </tr><tr class="row" data-acc="0.5961538461538461"
+          data-n="52">
+          <td><span class="mono">512880</span> 证券ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>59.62%</b></td>
+          <td class="num"><b>52</b></td>
+          <td class="num">31</td>
+          <td class="num">8.86%</td>
+          <td class="num muted">51.45%</td>
+        </tr><tr class="row" data-acc="0.5957446808510638"
+          data-n="47">
+          <td><span class="mono">399986</span> 中证银行
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>59.57%</b></td>
+          <td class="num"><b>47</b></td>
+          <td class="num">28</td>
+          <td class="num">7.15%</td>
+          <td class="num muted">56.01%</td>
+        </tr><tr class="row" data-acc="0.5953947368421053"
+          data-n="304">
+          <td><span class="mono">515790</span> 光伏ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>59.54%</b></td>
+          <td class="num"><b>304</b></td>
+          <td class="num">181</td>
+          <td class="num">94.70%</td>
+          <td class="num muted">49.22%</td>
+        </tr><tr class="row" data-acc="0.5942028985507246"
+          data-n="69">
+          <td><span class="mono">399005</span> 中小100
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>59.42%</b></td>
+          <td class="num"><b>69</b></td>
+          <td class="num">41</td>
+          <td class="num">5.61%</td>
+          <td class="num muted">49.23%</td>
+        </tr><tr class="row small" data-acc="0.5909090909090909"
+          data-n="22">
+          <td><span class="mono">000819</span> 有色金属
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>59.09%</b></td>
+          <td class="num"><b>22</b></td>
+          <td class="num">13</td>
+          <td class="num">2.60%</td>
+          <td class="num muted">51.65%</td>
+        </tr><tr class="row small" data-acc="0.5909090909090909"
+          data-n="22">
+          <td><span class="mono">000819</span> 有色金属
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>59.09%</b></td>
+          <td class="num"><b>22</b></td>
+          <td class="num">13</td>
+          <td class="num">2.65%</td>
+          <td class="num muted">51.99%</td>
+        </tr><tr class="row" data-acc="0.589041095890411"
+          data-n="73">
+          <td><span class="mono">300750</span> 宁德时代
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>58.90%</b></td>
+          <td class="num"><b>73</b></td>
+          <td class="num">43</td>
+          <td class="num">15.87%</td>
+          <td class="num muted">47.83%</td>
+        </tr><tr class="row" data-acc="0.5875"
+          data-n="80">
+          <td><span class="mono">000905</span> 中证500
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>58.75%</b></td>
+          <td class="num"><b>80</b></td>
+          <td class="num">47</td>
+          <td class="num">6.20%</td>
+          <td class="num muted">51.51%</td>
+        </tr><tr class="row" data-acc="0.5875"
+          data-n="80">
+          <td><span class="mono">399006</span> 创业板指
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>58.75%</b></td>
+          <td class="num"><b>80</b></td>
+          <td class="num">47</td>
+          <td class="num">8.31%</td>
+          <td class="num muted">47.04%</td>
+        </tr><tr class="row small" data-acc="0.5862068965517241"
+          data-n="29">
+          <td><span class="mono">399001</span> 深证成指
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>58.62%</b></td>
+          <td class="num"><b>29</b></td>
+          <td class="num">17</td>
+          <td class="num">2.20%</td>
+          <td class="num muted">45.97%</td>
+        </tr><tr class="row" data-acc="0.5858585858585859"
+          data-n="198">
+          <td><span class="mono">000651</span> 格力电器
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>58.59%</b></td>
+          <td class="num"><b>198</b></td>
+          <td class="num">116</td>
+          <td class="num">15.57%</td>
+          <td class="num muted">48.74%</td>
+        </tr><tr class="row" data-acc="0.5853658536585366"
+          data-n="82">
+          <td><span class="mono">399975</span> 证券公司
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>58.54%</b></td>
+          <td class="num"><b>82</b></td>
+          <td class="num">48</td>
+          <td class="num">12.31%</td>
+          <td class="num muted">52.55%</td>
+        </tr><tr class="row" data-acc="0.5838509316770186"
+          data-n="161">
+          <td><span class="mono">600276</span> 恒瑞医药
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>58.39%</b></td>
+          <td class="num"><b>161</b></td>
+          <td class="num">94</td>
+          <td class="num">12.34%</td>
+          <td class="num muted">48.97%</td>
+        </tr><tr class="row" data-acc="0.5833333333333334"
+          data-n="72">
+          <td><span class="mono">000813</span> 细分化工
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>58.33%</b></td>
+          <td class="num"><b>72</b></td>
+          <td class="num">42</td>
+          <td class="num">8.43%</td>
+          <td class="num muted">49.41%</td>
+        </tr><tr class="row" data-acc="0.5827338129496403"
+          data-n="139">
+          <td><span class="mono">300750</span> 宁德时代
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>58.27%</b></td>
+          <td class="num"><b>139</b></td>
+          <td class="num">81</td>
+          <td class="num">29.57%</td>
+          <td class="num muted">46.60%</td>
+        </tr><tr class="row" data-acc="0.5818181818181818"
+          data-n="55">
+          <td><span class="mono">601088</span> 中国神华
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>58.18%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">32</td>
+          <td class="num">4.97%</td>
+          <td class="num muted">50.50%</td>
+        </tr><tr class="row" data-acc="0.5795454545454546"
+          data-n="88">
+          <td><span class="mono">513050</span> 中概互联网ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>57.95%</b></td>
+          <td class="num"><b>88</b></td>
+          <td class="num">51</td>
+          <td class="num">15.60%</td>
+          <td class="num muted">47.87%</td>
+        </tr><tr class="row" data-acc="0.5794392523364486"
+          data-n="107">
+          <td><span class="mono">513050</span> 中概互联网ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>57.94%</b></td>
+          <td class="num"><b>107</b></td>
+          <td class="num">62</td>
+          <td class="num">19.63%</td>
+          <td class="num muted">56.15%</td>
+        </tr><tr class="row" data-acc="0.5792682926829268"
+          data-n="164">
+          <td><span class="mono">931775</span> 房地产
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>57.93%</b></td>
+          <td class="num"><b>164</b></td>
+          <td class="num">95</td>
+          <td class="num">59.21%</td>
+          <td class="num muted">55.23%</td>
+        </tr><tr class="row" data-acc="0.5789473684210527"
+          data-n="38">
+          <td><span class="mono">000001</span> 平安银行
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>57.89%</b></td>
+          <td class="num"><b>38</b></td>
+          <td class="num">22</td>
+          <td class="num">2.99%</td>
+          <td class="num muted">41.37%</td>
+        </tr><tr class="row" data-acc="0.5789473684210527"
+          data-n="38">
+          <td><span class="mono">512660</span> 军工ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>57.89%</b></td>
+          <td class="num"><b>38</b></td>
+          <td class="num">22</td>
+          <td class="num">6.47%</td>
+          <td class="num muted">49.40%</td>
+        </tr><tr class="row" data-acc="0.5757575757575758"
+          data-n="33">
+          <td><span class="mono">000905</span> 中证500
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>57.58%</b></td>
+          <td class="num"><b>33</b></td>
+          <td class="num">19</td>
+          <td class="num">2.59%</td>
+          <td class="num muted">47.49%</td>
+        </tr><tr class="row" data-acc="0.5714285714285714"
+          data-n="49">
+          <td><span class="mono">399975</span> 证券公司
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>57.14%</b></td>
+          <td class="num"><b>49</b></td>
+          <td class="num">28</td>
+          <td class="num">7.38%</td>
+          <td class="num muted">51.51%</td>
+        </tr><tr class="row" data-acc="0.5698924731182796"
+          data-n="93">
+          <td><span class="mono">399997</span> 中证白酒
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>56.99%</b></td>
+          <td class="num"><b>93</b></td>
+          <td class="num">53</td>
+          <td class="num">8.87%</td>
+          <td class="num muted">40.74%</td>
+        </tr><tr class="row" data-acc="0.5695364238410596"
+          data-n="151">
+          <td><span class="mono">512690</span> 酒ETF鹏华
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>56.95%</b></td>
+          <td class="num"><b>151</b></td>
+          <td class="num">86</td>
+          <td class="num">37.19%</td>
+          <td class="num muted">32.51%</td>
+        </tr><tr class="row" data-acc="0.5675675675675675"
+          data-n="37">
+          <td><span class="mono">601088</span> 中国神华
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>56.76%</b></td>
+          <td class="num"><b>37</b></td>
+          <td class="num">21</td>
+          <td class="num">3.35%</td>
+          <td class="num muted">46.42%</td>
+        </tr><tr class="row" data-acc="0.5674418604651162"
+          data-n="215">
+          <td><span class="mono">510300</span> 沪深300ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>56.74%</b></td>
+          <td class="num"><b>215</b></td>
+          <td class="num">122</td>
+          <td class="num">25.97%</td>
+          <td class="num muted">46.74%</td>
+        </tr><tr class="row" data-acc="0.5671641791044776"
+          data-n="67">
+          <td><span class="mono">000016</span> 上证50
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>56.72%</b></td>
+          <td class="num"><b>67</b></td>
+          <td class="num">38</td>
+          <td class="num">5.07%</td>
+          <td class="num muted">47.01%</td>
+        </tr><tr class="row" data-acc="0.5661971830985916"
+          data-n="355">
+          <td><span class="mono">931079</span> 5G通信
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>56.62%</b></td>
+          <td class="num"><b>355</b></td>
+          <td class="num">201</td>
+          <td class="num">89.87%</td>
+          <td class="num muted">62.03%</td>
+        </tr><tr class="row" data-acc="0.5649122807017544"
+          data-n="285">
+          <td><span class="mono">159915</span> 创业板ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>56.49%</b></td>
+          <td class="num"><b>285</b></td>
+          <td class="num">161</td>
+          <td class="num">33.89%</td>
+          <td class="num muted">46.73%</td>
+        </tr><tr class="row" data-acc="0.564179104477612"
+          data-n="335">
+          <td><span class="mono">512100</span> 中证1000ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>56.42%</b></td>
+          <td class="num"><b>335</b></td>
+          <td class="num">189</td>
+          <td class="num">60.14%</td>
+          <td class="num muted">55.83%</td>
+        </tr><tr class="row" data-acc="0.5634146341463414"
+          data-n="410">
+          <td><span class="mono">000813</span> 细分化工
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>56.34%</b></td>
+          <td class="num"><b>410</b></td>
+          <td class="num">231</td>
+          <td class="num">48.12%</td>
+          <td class="num muted">48.71%</td>
+        </tr><tr class="row" data-acc="0.5630252100840336"
+          data-n="476">
+          <td><span class="mono">399005</span> 中小100
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>56.30%</b></td>
+          <td class="num"><b>476</b></td>
+          <td class="num">268</td>
+          <td class="num">38.79%</td>
+          <td class="num muted">48.74%</td>
+        </tr><tr class="row" data-acc="0.5602836879432624"
+          data-n="141">
+          <td><span class="mono">159915</span> 创业板ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>56.03%</b></td>
+          <td class="num"><b>141</b></td>
+          <td class="num">79</td>
+          <td class="num">16.36%</td>
+          <td class="num muted">49.42%</td>
+        </tr><tr class="row" data-acc="0.56"
+          data-n="75">
+          <td><span class="mono">510300</span> 沪深300ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>56.00%</b></td>
+          <td class="num"><b>75</b></td>
+          <td class="num">42</td>
+          <td class="num">8.95%</td>
+          <td class="num muted">45.58%</td>
+        </tr><tr class="row small" data-acc="0.56"
+          data-n="25">
+          <td><span class="mono">510300</span> 沪深300ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>56.00%</b></td>
+          <td class="num"><b>25</b></td>
+          <td class="num">14</td>
+          <td class="num">2.97%</td>
+          <td class="num muted">49.35%</td>
+        </tr><tr class="row" data-acc="0.5594713656387665"
+          data-n="227">
+          <td><span class="mono">399001</span> 深证成指
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>55.95%</b></td>
+          <td class="num"><b>227</b></td>
+          <td class="num">127</td>
+          <td class="num">17.16%</td>
+          <td class="num muted">48.75%</td>
+        </tr><tr class="row" data-acc="0.5588235294117647"
+          data-n="612">
+          <td><span class="mono">399001</span> 深证成指
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>55.88%</b></td>
+          <td class="num"><b>612</b></td>
+          <td class="num">342</td>
+          <td class="num">46.33%</td>
+          <td class="num muted">48.30%</td>
+        </tr><tr class="row" data-acc="0.5588235294117647"
+          data-n="34">
+          <td><span class="mono">002594</span> 比亚迪
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>55.88%</b></td>
+          <td class="num"><b>34</b></td>
+          <td class="num">19</td>
+          <td class="num">3.87%</td>
+          <td class="num muted">53.53%</td>
+        </tr><tr class="row" data-acc="0.5573770491803278"
+          data-n="122">
+          <td><span class="mono">399005</span> 中小100
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>55.74%</b></td>
+          <td class="num"><b>122</b></td>
+          <td class="num">68</td>
+          <td class="num">10.07%</td>
+          <td class="num muted">42.66%</td>
+        </tr><tr class="row" data-acc="0.5572916666666666"
+          data-n="384">
+          <td><span class="mono">399001</span> 深证成指
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>55.73%</b></td>
+          <td class="num"><b>384</b></td>
+          <td class="num">214</td>
+          <td class="num">28.98%</td>
+          <td class="num muted">48.00%</td>
+        </tr><tr class="row" data-acc="0.5559701492537313"
+          data-n="536">
+          <td><span class="mono">399005</span> 中小100
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>55.60%</b></td>
+          <td class="num"><b>536</b></td>
+          <td class="num">298</td>
+          <td class="num">43.61%</td>
+          <td class="num muted">50.20%</td>
+        </tr><tr class="row" data-acc="0.5555555555555556"
+          data-n="36">
+          <td><span class="mono">512880</span> 证券ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>55.56%</b></td>
+          <td class="num"><b>36</b></td>
+          <td class="num">20</td>
+          <td class="num">6.11%</td>
+          <td class="num muted">50.59%</td>
+        </tr><tr class="row" data-acc="0.5544554455445545"
+          data-n="101">
+          <td><span class="mono">000819</span> 有色金属
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>55.45%</b></td>
+          <td class="num"><b>101</b></td>
+          <td class="num">56</td>
+          <td class="num">12.01%</td>
+          <td class="num muted">52.44%</td>
+        </tr><tr class="row" data-acc="0.5540540540540541"
+          data-n="74">
+          <td><span class="mono">931775</span> 房地产
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>55.41%</b></td>
+          <td class="num"><b>74</b></td>
+          <td class="num">41</td>
+          <td class="num">28.24%</td>
+          <td class="num muted">59.16%</td>
+        </tr><tr class="row" data-acc="0.5537190082644629"
+          data-n="484">
+          <td><span class="mono">159915</span> 创业板ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>55.37%</b></td>
+          <td class="num"><b>484</b></td>
+          <td class="num">268</td>
+          <td class="num">59.68%</td>
+          <td class="num muted">45.38%</td>
+        </tr><tr class="row" data-acc="0.5531914893617021"
+          data-n="47">
+          <td><span class="mono">000333</span> 美的集团
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>55.32%</b></td>
+          <td class="num"><b>47</b></td>
+          <td class="num">26</td>
+          <td class="num">6.33%</td>
+          <td class="num muted">54.99%</td>
+        </tr><tr class="row" data-acc="0.5519125683060109"
+          data-n="183">
+          <td><span class="mono">510500</span> 中证500ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>55.19%</b></td>
+          <td class="num"><b>183</b></td>
+          <td class="num">101</td>
+          <td class="num">23.22%</td>
+          <td class="num muted">48.22%</td>
+        </tr><tr class="row" data-acc="0.55078125"
+          data-n="256">
+          <td><span class="mono">000333</span> 美的集团
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>55.08%</b></td>
+          <td class="num"><b>256</b></td>
+          <td class="num">141</td>
+          <td class="num">34.18%</td>
+          <td class="num muted">53.94%</td>
+        </tr><tr class="row" data-acc="0.5503355704697986"
+          data-n="149">
+          <td><span class="mono">399303</span> 国证2000
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>55.03%</b></td>
+          <td class="num"><b>149</b></td>
+          <td class="num">82</td>
+          <td class="num">16.16%</td>
+          <td class="num muted">50.11%</td>
+        </tr><tr class="row" data-acc="0.5495049504950495"
+          data-n="202">
+          <td><span class="mono">600900</span> 长江电力
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>54.95%</b></td>
+          <td class="num"><b>202</b></td>
+          <td class="num">111</td>
+          <td class="num">16.69%</td>
+          <td class="num muted">52.15%</td>
+        </tr><tr class="row" data-acc="0.5491803278688525"
+          data-n="244">
+          <td><span class="mono">159949</span> 创业板50ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>54.92%</b></td>
+          <td class="num"><b>244</b></td>
+          <td class="num">134</td>
+          <td class="num">41.57%</td>
+          <td class="num muted">49.57%</td>
+        </tr><tr class="row" data-acc="0.5490196078431373"
+          data-n="102">
+          <td><span class="mono">518880</span> 黄金ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>54.90%</b></td>
+          <td class="num"><b>102</b></td>
+          <td class="num">56</td>
+          <td class="num">13.18%</td>
+          <td class="num muted">56.07%</td>
+        </tr><tr class="row" data-acc="0.5490196078431373"
+          data-n="51">
+          <td><span class="mono">512880</span> 证券ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>54.90%</b></td>
+          <td class="num"><b>51</b></td>
+          <td class="num">28</td>
+          <td class="num">8.92%</td>
+          <td class="num muted">53.50%</td>
+        </tr><tr class="row" data-acc="0.5489690721649485"
+          data-n="388">
+          <td><span class="mono">000333</span> 美的集团
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>54.90%</b></td>
+          <td class="num"><b>388</b></td>
+          <td class="num">213</td>
+          <td class="num">51.94%</td>
+          <td class="num muted">54.75%</td>
+        </tr><tr class="row" data-acc="0.5488721804511278"
+          data-n="133">
+          <td><span class="mono">000922</span> 中证红利
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>54.89%</b></td>
+          <td class="num"><b>133</b></td>
+          <td class="num">73</td>
+          <td class="num">12.56%</td>
+          <td class="num muted">51.09%</td>
+        </tr><tr class="row" data-acc="0.5483870967741935"
+          data-n="31">
+          <td><span class="mono">159915</span> 创业板ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>54.84%</b></td>
+          <td class="num"><b>31</b></td>
+          <td class="num">17</td>
+          <td class="num">3.62%</td>
+          <td class="num muted">47.08%</td>
+        </tr><tr class="row" data-acc="0.5463917525773195"
+          data-n="388">
+          <td><span class="mono">512100</span> 中证1000ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>54.64%</b></td>
+          <td class="num"><b>388</b></td>
+          <td class="num">212</td>
+          <td class="num">67.83%</td>
+          <td class="num muted">53.32%</td>
+        </tr><tr class="row" data-acc="0.5454545454545454"
+          data-n="154">
+          <td><span class="mono">399986</span> 中证银行
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>54.55%</b></td>
+          <td class="num"><b>154</b></td>
+          <td class="num">84</td>
+          <td class="num">23.12%</td>
+          <td class="num muted">49.10%</td>
+        </tr><tr class="row" data-acc="0.5454545454545454"
+          data-n="55">
+          <td><span class="mono">399417</span> 新能源车
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>54.55%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">30</td>
+          <td class="num">7.90%</td>
+          <td class="num muted">48.28%</td>
+        </tr><tr class="row" data-acc="0.5448028673835126"
+          data-n="279">
+          <td><span class="mono">000949</span> 中证农业
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>54.48%</b></td>
+          <td class="num"><b>279</b></td>
+          <td class="num">152</td>
+          <td class="num">21.54%</td>
+          <td class="num muted">50.19%</td>
+        </tr><tr class="row" data-acc="0.5446927374301676"
+          data-n="358">
+          <td><span class="mono">512100</span> 中证1000ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>54.47%</b></td>
+          <td class="num"><b>358</b></td>
+          <td class="num">195</td>
+          <td class="num">63.14%</td>
+          <td class="num muted">54.14%</td>
+        </tr><tr class="row" data-acc="0.5446428571428571"
+          data-n="112">
+          <td><span class="mono">000001</span> 平安银行
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>54.46%</b></td>
+          <td class="num"><b>112</b></td>
+          <td class="num">61</td>
+          <td class="num">8.72%</td>
+          <td class="num muted">43.85%</td>
+        </tr><tr class="row" data-acc="0.54421768707483"
+          data-n="147">
+          <td><span class="mono">510050</span> 上证50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>54.42%</b></td>
+          <td class="num"><b>147</b></td>
+          <td class="num">80</td>
+          <td class="num">11.45%</td>
+          <td class="num muted">47.12%</td>
+        </tr><tr class="row" data-acc="0.5441176470588235"
+          data-n="68">
+          <td><span class="mono">000813</span> 细分化工
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>54.41%</b></td>
+          <td class="num"><b>68</b></td>
+          <td class="num">37</td>
+          <td class="num">8.14%</td>
+          <td class="num muted">48.50%</td>
+        </tr><tr class="row" data-acc="0.5432525951557093"
+          data-n="289">
+          <td><span class="mono">588000</span> 科创50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>54.33%</b></td>
+          <td class="num"><b>289</b></td>
+          <td class="num">157</td>
+          <td class="num">87.31%</td>
+          <td class="num muted">45.62%</td>
+        </tr><tr class="row" data-acc="0.5420560747663551"
+          data-n="321">
+          <td><span class="mono">515790</span> 光伏ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>54.21%</b></td>
+          <td class="num"><b>321</b></td>
+          <td class="num">174</td>
+          <td class="num">99.38%</td>
+          <td class="num muted">47.37%</td>
+        </tr><tr class="row" data-acc="0.54"
+          data-n="50">
+          <td><span class="mono">399417</span> 新能源车
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>54.00%</b></td>
+          <td class="num"><b>50</b></td>
+          <td class="num">27</td>
+          <td class="num">7.09%</td>
+          <td class="num muted">48.94%</td>
+        </tr><tr class="row" data-acc="0.54"
+          data-n="50">
+          <td><span class="mono">600036</span> 招商银行
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>54.00%</b></td>
+          <td class="num"><b>50</b></td>
+          <td class="num">27</td>
+          <td class="num">3.83%</td>
+          <td class="num muted">48.39%</td>
+        </tr><tr class="row" data-acc="0.539568345323741"
+          data-n="139">
+          <td><span class="mono">512690</span> 酒ETF鹏华
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>53.96%</b></td>
+          <td class="num"><b>139</b></td>
+          <td class="num">75</td>
+          <td class="num">33.41%</td>
+          <td class="num muted">37.74%</td>
+        </tr><tr class="row" data-acc="0.5388888888888889"
+          data-n="540">
+          <td><span class="mono">399005</span> 中小100
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>53.89%</b></td>
+          <td class="num"><b>540</b></td>
+          <td class="num">291</td>
+          <td class="num">44.19%</td>
+          <td class="num muted">44.93%</td>
+        </tr><tr class="row" data-acc="0.5388349514563107"
+          data-n="618">
+          <td><span class="mono">399001</span> 深证成指
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>53.88%</b></td>
+          <td class="num"><b>618</b></td>
+          <td class="num">333</td>
+          <td class="num">47.32%</td>
+          <td class="num muted">44.49%</td>
+        </tr><tr class="row" data-acc="0.5387755102040817"
+          data-n="245">
+          <td><span class="mono">000001</span> 上证指数
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>53.88%</b></td>
+          <td class="num"><b>245</b></td>
+          <td class="num">132</td>
+          <td class="num">18.49%</td>
+          <td class="num muted">51.92%</td>
+        </tr><tr class="row" data-acc="0.5380710659898477"
+          data-n="197">
+          <td><span class="mono">300059</span> 东方财富
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>53.81%</b></td>
+          <td class="num"><b>197</b></td>
+          <td class="num">106</td>
+          <td class="num">20.54%</td>
+          <td class="num muted">55.58%</td>
+        </tr><tr class="row" data-acc="0.5371329879101899"
+          data-n="579">
+          <td><span class="mono">518880</span> 黄金ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>53.71%</b></td>
+          <td class="num"><b>579</b></td>
+          <td class="num">311</td>
+          <td class="num">75.00%</td>
+          <td class="num muted">59.07%</td>
+        </tr><tr class="row" data-acc="0.5370370370370371"
+          data-n="162">
+          <td><span class="mono">000688</span> 科创50
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>53.70%</b></td>
+          <td class="num"><b>162</b></td>
+          <td class="num">87</td>
+          <td class="num">42.19%</td>
+          <td class="num muted">46.61%</td>
+        </tr><tr class="row" data-acc="0.5357142857142857"
+          data-n="56">
+          <td><span class="mono">512660</span> 军工ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>53.57%</b></td>
+          <td class="num"><b>56</b></td>
+          <td class="num">30</td>
+          <td class="num">9.62%</td>
+          <td class="num muted">53.26%</td>
+        </tr><tr class="row small" data-acc="0.5357142857142857"
+          data-n="28">
+          <td><span class="mono">000905</span> 中证500
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>53.57%</b></td>
+          <td class="num"><b>28</b></td>
+          <td class="num">15</td>
+          <td class="num">2.18%</td>
+          <td class="num muted">49.07%</td>
+        </tr><tr class="row" data-acc="0.5353075170842825"
+          data-n="439">
+          <td><span class="mono">512100</span> 中证1000ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>53.53%</b></td>
+          <td class="num"><b>439</b></td>
+          <td class="num">235</td>
+          <td class="num">76.48%</td>
+          <td class="num muted">53.83%</td>
+        </tr><tr class="row" data-acc="0.5344036697247706"
+          data-n="436">
+          <td><span class="mono">600276</span> 恒瑞医药
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>53.44%</b></td>
+          <td class="num"><b>436</b></td>
+          <td class="num">233</td>
+          <td class="num">33.21%</td>
+          <td class="num muted">46.31%</td>
+        </tr><tr class="row" data-acc="0.5341614906832298"
+          data-n="161">
+          <td><span class="mono">931775</span> 房地产
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>53.42%</b></td>
+          <td class="num"><b>161</b></td>
+          <td class="num">86</td>
+          <td class="num">59.19%</td>
+          <td class="num muted">58.09%</td>
+        </tr><tr class="row" data-acc="0.5337837837837838"
+          data-n="148">
+          <td><span class="mono">399303</span> 国证2000
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>53.38%</b></td>
+          <td class="num"><b>148</b></td>
+          <td class="num">79</td>
+          <td class="num">16.23%</td>
+          <td class="num muted">50.11%</td>
+        </tr><tr class="row" data-acc="0.5333333333333333"
+          data-n="60">
+          <td><span class="mono">002594</span> 比亚迪
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>53.33%</b></td>
+          <td class="num"><b>60</b></td>
+          <td class="num">32</td>
+          <td class="num">6.99%</td>
+          <td class="num muted">54.43%</td>
+        </tr><tr class="row" data-acc="0.5331632653061225"
+          data-n="392">
+          <td><span class="mono">399006</span> 创业板指
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>53.32%</b></td>
+          <td class="num"><b>392</b></td>
+          <td class="num">209</td>
+          <td class="num">41.35%</td>
+          <td class="num muted">53.90%</td>
+        </tr><tr class="row" data-acc="0.5327102803738317"
+          data-n="214">
+          <td><span class="mono">399967</span> 中证军工
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>53.27%</b></td>
+          <td class="num"><b>214</b></td>
+          <td class="num">114</td>
+          <td class="num">29.52%</td>
+          <td class="num muted">51.86%</td>
+        </tr><tr class="row" data-acc="0.5327102803738317"
+          data-n="107">
+          <td><span class="mono">399440</span> 国证钢铁
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>53.27%</b></td>
+          <td class="num"><b>107</b></td>
+          <td class="num">57</td>
+          <td class="num">15.62%</td>
+          <td class="num muted">48.76%</td>
+        </tr><tr class="row" data-acc="0.532258064516129"
+          data-n="310">
+          <td><span class="mono">002594</span> 比亚迪
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>53.23%</b></td>
+          <td class="num"><b>310</b></td>
+          <td class="num">165</td>
+          <td class="num">34.60%</td>
+          <td class="num muted">53.57%</td>
+        </tr><tr class="row" data-acc="0.5319148936170213"
+          data-n="47">
+          <td><span class="mono">399986</span> 中证银行
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>53.19%</b></td>
+          <td class="num"><b>47</b></td>
+          <td class="num">25</td>
+          <td class="num">7.08%</td>
+          <td class="num muted">52.41%</td>
+        </tr><tr class="row" data-acc="0.531496062992126"
+          data-n="254">
+          <td><span class="mono">399006</span> 创业板指
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>53.15%</b></td>
+          <td class="num"><b>254</b></td>
+          <td class="num">135</td>
+          <td class="num">26.51%</td>
+          <td class="num muted">46.14%</td>
+        </tr><tr class="row" data-acc="0.53125"
+          data-n="32">
+          <td><span class="mono">601318</span> 中国平安
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>53.12%</b></td>
+          <td class="num"><b>32</b></td>
+          <td class="num">17</td>
+          <td class="num">2.83%</td>
+          <td class="num muted">51.33%</td>
+        </tr><tr class="row" data-acc="0.53"
+          data-n="100">
+          <td><span class="mono">300059</span> 东方财富
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>53.00%</b></td>
+          <td class="num"><b>100</b></td>
+          <td class="num">53</td>
+          <td class="num">10.59%</td>
+          <td class="num muted">58.69%</td>
+        </tr><tr class="row" data-acc="0.5294117647058824"
+          data-n="136">
+          <td><span class="mono">512660</span> 军工ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>52.94%</b></td>
+          <td class="num"><b>136</b></td>
+          <td class="num">72</td>
+          <td class="num">23.78%</td>
+          <td class="num muted">51.40%</td>
+        </tr><tr class="row" data-acc="0.5294117647058824"
+          data-n="34">
+          <td><span class="mono">510050</span> 上证50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>52.94%</b></td>
+          <td class="num"><b>34</b></td>
+          <td class="num">18</td>
+          <td class="num">2.64%</td>
+          <td class="num muted">49.46%</td>
+        </tr><tr class="row small" data-acc="0.5294117647058824"
+          data-n="17">
+          <td><span class="mono">000300</span> 沪深300
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>52.94%</b></td>
+          <td class="num"><b>17</b></td>
+          <td class="num">9</td>
+          <td class="num">1.32%</td>
+          <td class="num muted">48.18%</td>
+        </tr><tr class="row" data-acc="0.5289256198347108"
+          data-n="121">
+          <td><span class="mono">600028</span> 中国石化
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>52.89%</b></td>
+          <td class="num"><b>121</b></td>
+          <td class="num">64</td>
+          <td class="num">9.27%</td>
+          <td class="num muted">50.65%</td>
+        </tr><tr class="row" data-acc="0.5286783042394015"
+          data-n="401">
+          <td><span class="mono">000813</span> 细分化工
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>52.87%</b></td>
+          <td class="num"><b>401</b></td>
+          <td class="num">212</td>
+          <td class="num">47.18%</td>
+          <td class="num muted">46.35%</td>
+        </tr><tr class="row" data-acc="0.528052805280528"
+          data-n="303">
+          <td><span class="mono">600519</span> 贵州茅台
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>52.81%</b></td>
+          <td class="num"><b>303</b></td>
+          <td class="num">160</td>
+          <td class="num">23.17%</td>
+          <td class="num muted">45.49%</td>
+        </tr><tr class="row" data-acc="0.5274725274725275"
+          data-n="91">
+          <td><span class="mono">399440</span> 国证钢铁
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>52.75%</b></td>
+          <td class="num"><b>91</b></td>
+          <td class="num">48</td>
+          <td class="num">13.58%</td>
+          <td class="num muted">50.00%</td>
+        </tr><tr class="row" data-acc="0.5264900662251656"
+          data-n="302">
+          <td><span class="mono">600030</span> 中信证券
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>52.65%</b></td>
+          <td class="num"><b>302</b></td>
+          <td class="num">159</td>
+          <td class="num">23.20%</td>
+          <td class="num muted">46.62%</td>
+        </tr><tr class="row" data-acc="0.5263157894736842"
+          data-n="323">
+          <td><span class="mono">515790</span> 光伏ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>52.63%</b></td>
+          <td class="num"><b>323</b></td>
+          <td class="num">170</td>
+          <td class="num">99.38%</td>
+          <td class="num muted">48.31%</td>
+        </tr><tr class="row" data-acc="0.5260663507109005"
+          data-n="211">
+          <td><span class="mono">000016</span> 上证50
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>52.61%</b></td>
+          <td class="num"><b>211</b></td>
+          <td class="num">111</td>
+          <td class="num">15.92%</td>
+          <td class="num muted">48.98%</td>
+        </tr><tr class="row" data-acc="0.5258964143426295"
+          data-n="251">
+          <td><span class="mono">512690</span> 酒ETF鹏华
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>52.59%</b></td>
+          <td class="num"><b>251</b></td>
+          <td class="num">132</td>
+          <td class="num">59.62%</td>
+          <td class="num muted">40.62%</td>
+        </tr><tr class="row" data-acc="0.5247148288973384"
+          data-n="263">
+          <td><span class="mono">600028</span> 中国石化
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>52.47%</b></td>
+          <td class="num"><b>263</b></td>
+          <td class="num">138</td>
+          <td class="num">20.31%</td>
+          <td class="num muted">52.20%</td>
+        </tr><tr class="row" data-acc="0.5240174672489083"
+          data-n="229">
+          <td><span class="mono">399417</span> 新能源车
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>52.40%</b></td>
+          <td class="num"><b>229</b></td>
+          <td class="num">120</td>
+          <td class="num">33.38%</td>
+          <td class="num muted">48.69%</td>
+        </tr><tr class="row" data-acc="0.5238095238095238"
+          data-n="42">
+          <td><span class="mono">002594</span> 比亚迪
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>52.38%</b></td>
+          <td class="num"><b>42</b></td>
+          <td class="num">22</td>
+          <td class="num">4.73%</td>
+          <td class="num muted">53.94%</td>
+        </tr><tr class="row" data-acc="0.5238095238095238"
+          data-n="42">
+          <td><span class="mono">931079</span> 5G通信
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>52.38%</b></td>
+          <td class="num"><b>42</b></td>
+          <td class="num">22</td>
+          <td class="num">10.45%</td>
+          <td class="num muted">54.73%</td>
+        </tr><tr class="row small" data-acc="0.5238095238095238"
+          data-n="21">
+          <td><span class="mono">000852</span> 中证1000
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>52.38%</b></td>
+          <td class="num"><b>21</b></td>
+          <td class="num">11</td>
+          <td class="num">1.65%</td>
+          <td class="num muted">48.20%</td>
+        </tr><tr class="row" data-acc="0.5223880597014925"
+          data-n="67">
+          <td><span class="mono">510500</span> 中证500ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>52.24%</b></td>
+          <td class="num"><b>67</b></td>
+          <td class="num">35</td>
+          <td class="num">8.45%</td>
+          <td class="num muted">51.32%</td>
+        </tr><tr class="row" data-acc="0.521978021978022"
+          data-n="182">
+          <td><span class="mono">600276</span> 恒瑞医药
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>52.20%</b></td>
+          <td class="num"><b>182</b></td>
+          <td class="num">95</td>
+          <td class="num">14.01%</td>
+          <td class="num muted">47.11%</td>
+        </tr><tr class="row small" data-acc="0.5217391304347826"
+          data-n="23">
+          <td><span class="mono">600887</span> 伊利股份
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>52.17%</b></td>
+          <td class="num"><b>23</b></td>
+          <td class="num">12</td>
+          <td class="num">1.77%</td>
+          <td class="num muted">46.31%</td>
+        </tr><tr class="row" data-acc="0.5212765957446809"
+          data-n="564">
+          <td><span class="mono">000949</span> 中证农业
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>52.13%</b></td>
+          <td class="num"><b>564</b></td>
+          <td class="num">294</td>
+          <td class="num">43.86%</td>
+          <td class="num muted">50.86%</td>
+        </tr><tr class="row" data-acc="0.5192307692307693"
+          data-n="104">
+          <td><span class="mono">600276</span> 恒瑞医药
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>51.92%</b></td>
+          <td class="num"><b>104</b></td>
+          <td class="num">54</td>
+          <td class="num">8.07%</td>
+          <td class="num muted">48.33%</td>
+        </tr><tr class="row" data-acc="0.5177664974619289"
+          data-n="197">
+          <td><span class="mono">512690</span> 酒ETF鹏华
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>51.78%</b></td>
+          <td class="num"><b>197</b></td>
+          <td class="num">102</td>
+          <td class="num">46.35%</td>
+          <td class="num muted">41.18%</td>
+        </tr><tr class="row" data-acc="0.5172413793103449"
+          data-n="261">
+          <td><span class="mono">399967</span> 中证军工
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>51.72%</b></td>
+          <td class="num"><b>261</b></td>
+          <td class="num">135</td>
+          <td class="num">35.56%</td>
+          <td class="num muted">50.41%</td>
+        </tr><tr class="row" data-acc="0.5135135135135135"
+          data-n="37">
+          <td><span class="mono">000813</span> 细分化工
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>51.35%</b></td>
+          <td class="num"><b>37</b></td>
+          <td class="num">19</td>
+          <td class="num">4.38%</td>
+          <td class="num muted">48.99%</td>
+        </tr><tr class="row" data-acc="0.5123456790123457"
+          data-n="648">
+          <td><span class="mono">002415</span> 海康威视
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>51.23%</b></td>
+          <td class="num"><b>648</b></td>
+          <td class="num">332</td>
+          <td class="num">68.07%</td>
+          <td class="num muted">48.95%</td>
+        </tr><tr class="row" data-acc="0.5121107266435986"
+          data-n="578">
+          <td><span class="mono">000300</span> 沪深300
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>51.21%</b></td>
+          <td class="num"><b>578</b></td>
+          <td class="num">296</td>
+          <td class="num">45.30%</td>
+          <td class="num muted">42.79%</td>
+        </tr><tr class="row" data-acc="0.5121042830540037"
+          data-n="537">
+          <td><span class="mono">002304</span> 洋河股份
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>51.21%</b></td>
+          <td class="num"><b>537</b></td>
+          <td class="num">275</td>
+          <td class="num">53.81%</td>
+          <td class="num muted">57.21%</td>
+        </tr><tr class="row" data-acc="0.5118279569892473"
+          data-n="465">
+          <td><span class="mono">000949</span> 中证农业
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>51.18%</b></td>
+          <td class="num"><b>465</b></td>
+          <td class="num">238</td>
+          <td class="num">36.44%</td>
+          <td class="num muted">50.24%</td>
+        </tr><tr class="row" data-acc="0.5116279069767442"
+          data-n="43">
+          <td><span class="mono">300750</span> 宁德时代
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>51.16%</b></td>
+          <td class="num"><b>43</b></td>
+          <td class="num">22</td>
+          <td class="num">9.05%</td>
+          <td class="num muted">49.89%</td>
+        </tr><tr class="row" data-acc="0.5116279069767442"
+          data-n="43">
+          <td><span class="mono">931775</span> 房地产
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>51.16%</b></td>
+          <td class="num"><b>43</b></td>
+          <td class="num">22</td>
+          <td class="num">15.30%</td>
+          <td class="num muted">49.47%</td>
+        </tr><tr class="row" data-acc="0.5111111111111111"
+          data-n="45">
+          <td><span class="mono">000333</span> 美的集团
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>51.11%</b></td>
+          <td class="num"><b>45</b></td>
+          <td class="num">23</td>
+          <td class="num">6.15%</td>
+          <td class="num muted">53.01%</td>
+        </tr><tr class="row" data-acc="0.509090909090909"
+          data-n="55">
+          <td><span class="mono">510500</span> 中证500ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>50.91%</b></td>
+          <td class="num"><b>55</b></td>
+          <td class="num">28</td>
+          <td class="num">6.92%</td>
+          <td class="num muted">50.94%</td>
+        </tr><tr class="row" data-acc="0.5089820359281437"
+          data-n="167">
+          <td><span class="mono">601012</span> 隆基绿能
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.90%</b></td>
+          <td class="num"><b>167</b></td>
+          <td class="num">85</td>
+          <td class="num">19.79%</td>
+          <td class="num muted">44.08%</td>
+        </tr><tr class="row" data-acc="0.5089605734767025"
+          data-n="279">
+          <td><span class="mono">931775</span> 房地产
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>50.90%</b></td>
+          <td class="num"><b>279</b></td>
+          <td class="num">142</td>
+          <td class="num">100.00%</td>
+          <td class="num muted">54.48%</td>
+        </tr><tr class="row" data-acc="0.5084745762711864"
+          data-n="236">
+          <td><span class="mono">399967</span> 中证军工
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>50.85%</b></td>
+          <td class="num"><b>236</b></td>
+          <td class="num">120</td>
+          <td class="num">32.33%</td>
+          <td class="num muted">51.37%</td>
+        </tr><tr class="row" data-acc="0.5084745762711864"
+          data-n="177">
+          <td><span class="mono">600887</span> 伊利股份
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>50.85%</b></td>
+          <td class="num"><b>177</b></td>
+          <td class="num">90</td>
+          <td class="num">13.64%</td>
+          <td class="num muted">44.92%</td>
+        </tr><tr class="row" data-acc="0.5078299776286354"
+          data-n="447">
+          <td><span class="mono">300059</span> 东方财富
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>50.78%</b></td>
+          <td class="num"><b>447</b></td>
+          <td class="num">227</td>
+          <td class="num">46.51%</td>
+          <td class="num muted">54.32%</td>
+        </tr><tr class="row" data-acc="0.5063291139240507"
+          data-n="237">
+          <td><span class="mono">399998</span> 中证煤炭
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.63%</b></td>
+          <td class="num"><b>237</b></td>
+          <td class="num">120</td>
+          <td class="num">22.53%</td>
+          <td class="num muted">47.24%</td>
+        </tr><tr class="row" data-acc="0.5059523809523809"
+          data-n="168">
+          <td><span class="mono">601899</span> 紫金矿业
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>50.60%</b></td>
+          <td class="num"><b>168</b></td>
+          <td class="num">85</td>
+          <td class="num">15.77%</td>
+          <td class="num muted">42.82%</td>
+        </tr><tr class="row" data-acc="0.5058365758754864"
+          data-n="257">
+          <td><span class="mono">000651</span> 格力电器
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>50.58%</b></td>
+          <td class="num"><b>257</b></td>
+          <td class="num">130</td>
+          <td class="num">20.24%</td>
+          <td class="num muted">47.56%</td>
+        </tr><tr class="row" data-acc="0.5052631578947369"
+          data-n="95">
+          <td><span class="mono">399440</span> 国证钢铁
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.53%</b></td>
+          <td class="num"><b>95</b></td>
+          <td class="num">48</td>
+          <td class="num">13.79%</td>
+          <td class="num muted">49.06%</td>
+        </tr><tr class="row" data-acc="0.5052356020942408"
+          data-n="382">
+          <td><span class="mono">512480</span> 半导体ETF国联安
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>50.52%</b></td>
+          <td class="num"><b>382</b></td>
+          <td class="num">193</td>
+          <td class="num">93.63%</td>
+          <td class="num muted">50.98%</td>
+        </tr><tr class="row" data-acc="0.5049115913555993"
+          data-n="509">
+          <td><span class="mono">512100</span> 中证1000ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.49%</b></td>
+          <td class="num"><b>509</b></td>
+          <td class="num">257</td>
+          <td class="num">88.37%</td>
+          <td class="num muted">54.17%</td>
+        </tr><tr class="row" data-acc="0.5048543689320388"
+          data-n="103">
+          <td><span class="mono">600900</span> 长江电力
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>50.49%</b></td>
+          <td class="num"><b>103</b></td>
+          <td class="num">52</td>
+          <td class="num">8.46%</td>
+          <td class="num muted">50.12%</td>
+        </tr><tr class="row" data-acc="0.5043478260869565"
+          data-n="115">
+          <td><span class="mono">399986</span> 中证银行
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>50.43%</b></td>
+          <td class="num"><b>115</b></td>
+          <td class="num">58</td>
+          <td class="num">17.37%</td>
+          <td class="num muted">46.83%</td>
+        </tr><tr class="row" data-acc="0.5043103448275862"
+          data-n="232">
+          <td><span class="mono">399396</span> 国证食品
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.43%</b></td>
+          <td class="num"><b>232</b></td>
+          <td class="num">117</td>
+          <td class="num">28.26%</td>
+          <td class="num muted">43.36%</td>
+        </tr><tr class="row" data-acc="0.5041666666666667"
+          data-n="240">
+          <td><span class="mono">000922</span> 中证红利
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.42%</b></td>
+          <td class="num"><b>240</b></td>
+          <td class="num">121</td>
+          <td class="num">22.26%</td>
+          <td class="num muted">51.86%</td>
+        </tr><tr class="row" data-acc="0.5039370078740157"
+          data-n="127">
+          <td><span class="mono">159949</span> 创业板50ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>50.39%</b></td>
+          <td class="num"><b>127</b></td>
+          <td class="num">64</td>
+          <td class="num">22.09%</td>
+          <td class="num muted">50.96%</td>
+        </tr><tr class="row" data-acc="0.5027365129007036"
+          data-n="1279">
+          <td><span class="mono">000001</span> 平安银行
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>50.27%</b></td>
+          <td class="num"><b>1,279</b></td>
+          <td class="num">643</td>
+          <td class="num">100.00%</td>
+          <td class="num muted">44.18%</td>
+        </tr><tr class="row" data-acc="0.5018450184501845"
+          data-n="542">
+          <td><span class="mono">000858</span> 五粮液
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>50.18%</b></td>
+          <td class="num"><b>542</b></td>
+          <td class="num">272</td>
+          <td class="num">41.95%</td>
+          <td class="num muted">42.26%</td>
+        </tr><tr class="row" data-acc="0.5"
+          data-n="316">
+          <td><span class="mono">601857</span> 中国石油
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>316</b></td>
+          <td class="num">158</td>
+          <td class="num">28.16%</td>
+          <td class="num muted">47.24%</td>
+        </tr><tr class="row" data-acc="0.5"
+          data-n="214">
+          <td><span class="mono">601668</span> 中国建筑
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>214</b></td>
+          <td class="num">107</td>
+          <td class="num">21.46%</td>
+          <td class="num muted">59.08%</td>
+        </tr><tr class="row" data-acc="0.5"
+          data-n="194">
+          <td><span class="mono">399303</span> 国证2000
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>194</b></td>
+          <td class="num">97</td>
+          <td class="num">20.93%</td>
+          <td class="num muted">50.70%</td>
+        </tr><tr class="row" data-acc="0.5"
+          data-n="152">
+          <td><span class="mono">512660</span> 军工ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>152</b></td>
+          <td class="num">76</td>
+          <td class="num">25.81%</td>
+          <td class="num muted">48.39%</td>
+        </tr><tr class="row" data-acc="0.5"
+          data-n="80">
+          <td><span class="mono">399997</span> 中证白酒
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>80</b></td>
+          <td class="num">40</td>
+          <td class="num">7.67%</td>
+          <td class="num muted">38.26%</td>
+        </tr><tr class="row" data-acc="0.5"
+          data-n="34">
+          <td><span class="mono">510050</span> 上证50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>34</b></td>
+          <td class="num">17</td>
+          <td class="num">2.68%</td>
+          <td class="num muted">44.37%</td>
+        </tr><tr class="row small" data-acc="0.5"
+          data-n="28">
+          <td><span class="mono">600028</span> 中国石化
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>28</b></td>
+          <td class="num">14</td>
+          <td class="num">2.13%</td>
+          <td class="num muted">46.96%</td>
+        </tr><tr class="row small" data-acc="0.5"
+          data-n="24">
+          <td><span class="mono">300059</span> 东方财富
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>24</b></td>
+          <td class="num">12</td>
+          <td class="num">2.49%</td>
+          <td class="num muted">44.44%</td>
+        </tr><tr class="row small" data-acc="0.5"
+          data-n="20">
+          <td><span class="mono">300059</span> 东方财富
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>20</b></td>
+          <td class="num">10</td>
+          <td class="num">2.10%</td>
+          <td class="num muted">57.76%</td>
+        </tr><tr class="row small" data-acc="0.5"
+          data-n="14">
+          <td><span class="mono">000905</span> 中证500
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>14</b></td>
+          <td class="num">7</td>
+          <td class="num">1.08%</td>
+          <td class="num muted">50.73%</td>
+        </tr><tr class="row small" data-acc="0.5"
+          data-n="8">
+          <td><span class="mono">000001</span> 上证指数
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>50.00%</b></td>
+          <td class="num"><b>8</b></td>
+          <td class="num">4</td>
+          <td class="num">0.61%</td>
+          <td class="num muted">50.08%</td>
+        </tr><tr class="row" data-acc="0.49906542056074765"
+          data-n="535">
+          <td><span class="mono">600900</span> 长江电力
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>49.91%</b></td>
+          <td class="num"><b>535</b></td>
+          <td class="num">267</td>
+          <td class="num">43.89%</td>
+          <td class="num muted">47.83%</td>
+        </tr><tr class="row" data-acc="0.49868073878627966"
+          data-n="379">
+          <td><span class="mono">512660</span> 军工ETF国泰
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>49.87%</b></td>
+          <td class="num"><b>379</b></td>
+          <td class="num">189</td>
+          <td class="num">64.13%</td>
+          <td class="num muted">50.08%</td>
+        </tr><tr class="row" data-acc="0.4983922829581994"
+          data-n="622">
+          <td><span class="mono">601166</span> 兴业银行
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>49.84%</b></td>
+          <td class="num"><b>622</b></td>
+          <td class="num">310</td>
+          <td class="num">54.37%</td>
+          <td class="num muted">46.77%</td>
+        </tr><tr class="row" data-acc="0.49636363636363634"
+          data-n="550">
+          <td><span class="mono">002304</span> 洋河股份
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>49.64%</b></td>
+          <td class="num"><b>550</b></td>
+          <td class="num">273</td>
+          <td class="num">55.22%</td>
+          <td class="num muted">59.64%</td>
+        </tr><tr class="row" data-acc="0.49560117302052786"
+          data-n="341">
+          <td><span class="mono">601318</span> 中国平安
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>49.56%</b></td>
+          <td class="num"><b>341</b></td>
+          <td class="num">169</td>
+          <td class="num">29.68%</td>
+          <td class="num muted">47.35%</td>
+        </tr><tr class="row" data-acc="0.4947589098532495"
+          data-n="477">
+          <td><span class="mono">000819</span> 有色金属
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>49.48%</b></td>
+          <td class="num"><b>477</b></td>
+          <td class="num">236</td>
+          <td class="num">56.12%</td>
+          <td class="num muted">50.12%</td>
+        </tr><tr class="row" data-acc="0.4940239043824701"
+          data-n="251">
+          <td><span class="mono">600519</span> 贵州茅台
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>49.40%</b></td>
+          <td class="num"><b>251</b></td>
+          <td class="num">124</td>
+          <td class="num">19.22%</td>
+          <td class="num muted">45.94%</td>
+        </tr><tr class="row" data-acc="0.49322033898305084"
+          data-n="590">
+          <td><span class="mono">601318</span> 中国平安
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>49.32%</b></td>
+          <td class="num"><b>590</b></td>
+          <td class="num">291</td>
+          <td class="num">51.53%</td>
+          <td class="num muted">52.75%</td>
+        </tr><tr class="row" data-acc="0.4931506849315068"
+          data-n="73">
+          <td><span class="mono">399975</span> 证券公司
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>49.32%</b></td>
+          <td class="num"><b>73</b></td>
+          <td class="num">36</td>
+          <td class="num">11.03%</td>
+          <td class="num muted">53.17%</td>
+        </tr><tr class="row" data-acc="0.4927536231884058"
+          data-n="69">
+          <td><span class="mono">510500</span> 中证500ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>49.28%</b></td>
+          <td class="num"><b>69</b></td>
+          <td class="num">34</td>
+          <td class="num">8.87%</td>
+          <td class="num muted">48.46%</td>
+        </tr><tr class="row" data-acc="0.49107142857142855"
+          data-n="112">
+          <td><span class="mono">600036</span> 招商银行
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>49.11%</b></td>
+          <td class="num"><b>112</b></td>
+          <td class="num">55</td>
+          <td class="num">8.58%</td>
+          <td class="num muted">47.70%</td>
+        </tr><tr class="row" data-acc="0.4898989898989899"
+          data-n="198">
+          <td><span class="mono">512690</span> 酒ETF鹏华
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>48.99%</b></td>
+          <td class="num"><b>198</b></td>
+          <td class="num">97</td>
+          <td class="num">46.81%</td>
+          <td class="num muted">42.79%</td>
+        </tr><tr class="row" data-acc="0.4878048780487805"
+          data-n="205">
+          <td><span class="mono">601899</span> 紫金矿业
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>48.78%</b></td>
+          <td class="num"><b>205</b></td>
+          <td class="num">100</td>
+          <td class="num">18.95%</td>
+          <td class="num muted">46.49%</td>
+        </tr><tr class="row" data-acc="0.48598130841121495"
+          data-n="428">
+          <td><span class="mono">000949</span> 中证农业
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>48.60%</b></td>
+          <td class="num"><b>428</b></td>
+          <td class="num">208</td>
+          <td class="num">33.10%</td>
+          <td class="num muted">48.03%</td>
+        </tr><tr class="row" data-acc="0.48582995951417"
+          data-n="494">
+          <td><span class="mono">510300</span> 沪深300ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.58%</b></td>
+          <td class="num"><b>494</b></td>
+          <td class="num">240</td>
+          <td class="num">58.32%</td>
+          <td class="num muted">48.41%</td>
+        </tr><tr class="row" data-acc="0.4854368932038835"
+          data-n="824">
+          <td><span class="mono">399006</span> 创业板指
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.54%</b></td>
+          <td class="num"><b>824</b></td>
+          <td class="num">400</td>
+          <td class="num">85.21%</td>
+          <td class="num muted">46.54%</td>
+        </tr><tr class="row" data-acc="0.4854368932038835"
+          data-n="103">
+          <td><span class="mono">002415</span> 海康威视
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>48.54%</b></td>
+          <td class="num"><b>103</b></td>
+          <td class="num">50</td>
+          <td class="num">10.90%</td>
+          <td class="num muted">51.64%</td>
+        </tr><tr class="row" data-acc="0.4853801169590643"
+          data-n="171">
+          <td><span class="mono">000858</span> 五粮液
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.54%</b></td>
+          <td class="num"><b>171</b></td>
+          <td class="num">83</td>
+          <td class="num">13.21%</td>
+          <td class="num muted">43.43%</td>
+        </tr><tr class="row" data-acc="0.48484848484848486"
+          data-n="99">
+          <td><span class="mono">399303</span> 国证2000
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.48%</b></td>
+          <td class="num"><b>99</b></td>
+          <td class="num">48</td>
+          <td class="num">10.63%</td>
+          <td class="num muted">53.06%</td>
+        </tr><tr class="row" data-acc="0.48484848484848486"
+          data-n="66">
+          <td><span class="mono">601668</span> 中国建筑
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.48%</b></td>
+          <td class="num"><b>66</b></td>
+          <td class="num">32</td>
+          <td class="num">6.50%</td>
+          <td class="num muted">47.83%</td>
+        </tr><tr class="row" data-acc="0.4840816326530612"
+          data-n="1225">
+          <td><span class="mono">600036</span> 招商银行
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>48.41%</b></td>
+          <td class="num"><b>1,225</b></td>
+          <td class="num">593</td>
+          <td class="num">95.03%</td>
+          <td class="num muted">49.73%</td>
+        </tr><tr class="row" data-acc="0.48403361344537815"
+          data-n="595">
+          <td><span class="mono">399997</span> 中证白酒
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>48.40%</b></td>
+          <td class="num"><b>595</b></td>
+          <td class="num">288</td>
+          <td class="num">56.67%</td>
+          <td class="num muted">42.67%</td>
+        </tr><tr class="row" data-acc="0.4838709677419355"
+          data-n="31">
+          <td><span class="mono">600887</span> 伊利股份
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>48.39%</b></td>
+          <td class="num"><b>31</b></td>
+          <td class="num">15</td>
+          <td class="num">2.38%</td>
+          <td class="num muted">45.69%</td>
+        </tr><tr class="row" data-acc="0.4831804281345566"
+          data-n="654">
+          <td><span class="mono">000651</span> 格力电器
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>48.32%</b></td>
+          <td class="num"><b>654</b></td>
+          <td class="num">316</td>
+          <td class="num">51.70%</td>
+          <td class="num muted">47.83%</td>
+        </tr><tr class="row" data-acc="0.4827586206896552"
+          data-n="145">
+          <td><span class="mono">931079</span> 5G通信
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.28%</b></td>
+          <td class="num"><b>145</b></td>
+          <td class="num">70</td>
+          <td class="num">35.89%</td>
+          <td class="num muted">53.22%</td>
+        </tr><tr class="row" data-acc="0.48201438848920863"
+          data-n="417">
+          <td><span class="mono">601166</span> 兴业银行
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.20%</b></td>
+          <td class="num"><b>417</b></td>
+          <td class="num">201</td>
+          <td class="num">35.86%</td>
+          <td class="num muted">50.47%</td>
+        </tr><tr class="row" data-acc="0.4807692307692308"
+          data-n="52">
+          <td><span class="mono">000651</span> 格力电器
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>48.08%</b></td>
+          <td class="num"><b>52</b></td>
+          <td class="num">25</td>
+          <td class="num">4.08%</td>
+          <td class="num muted">47.25%</td>
+        </tr><tr class="row" data-acc="0.4796010879419764"
+          data-n="1103">
+          <td><span class="mono">601857</span> 中国石油
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>47.96%</b></td>
+          <td class="num"><b>1,103</b></td>
+          <td class="num">529</td>
+          <td class="num">100.00%</td>
+          <td class="num muted">44.42%</td>
+        </tr><tr class="row" data-acc="0.4794520547945205"
+          data-n="73">
+          <td><span class="mono">510300</span> 沪深300ETF华泰柏瑞
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>47.95%</b></td>
+          <td class="num"><b>73</b></td>
+          <td class="num">35</td>
+          <td class="num">8.64%</td>
+          <td class="num muted">49.11%</td>
+        </tr><tr class="row" data-acc="0.4791666666666667"
+          data-n="48">
+          <td><span class="mono">399440</span> 国证钢铁
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>47.92%</b></td>
+          <td class="num"><b>48</b></td>
+          <td class="num">23</td>
+          <td class="num">6.99%</td>
+          <td class="num muted">52.11%</td>
+        </tr><tr class="row" data-acc="0.4791666666666667"
+          data-n="48">
+          <td><span class="mono">600030</span> 中信证券
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>47.92%</b></td>
+          <td class="num"><b>48</b></td>
+          <td class="num">23</td>
+          <td class="num">3.71%</td>
+          <td class="num muted">45.17%</td>
+        </tr><tr class="row" data-acc="0.47767857142857145"
+          data-n="224">
+          <td><span class="mono">601988</span> 中国银行
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>47.77%</b></td>
+          <td class="num"><b>224</b></td>
+          <td class="num">107</td>
+          <td class="num">18.65%</td>
+          <td class="num muted">40.80%</td>
+        </tr><tr class="row" data-acc="0.4774774774774775"
+          data-n="222">
+          <td><span class="mono">300750</span> 宁德时代
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>47.75%</b></td>
+          <td class="num"><b>222</b></td>
+          <td class="num">106</td>
+          <td class="num">46.35%</td>
+          <td class="num muted">45.51%</td>
+        </tr><tr class="row" data-acc="0.4772727272727273"
+          data-n="88">
+          <td><span class="mono">510500</span> 中证500ETF南方
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>47.73%</b></td>
+          <td class="num"><b>88</b></td>
+          <td class="num">42</td>
+          <td class="num">11.04%</td>
+          <td class="num muted">48.93%</td>
+        </tr><tr class="row" data-acc="0.47639484978540775"
+          data-n="233">
+          <td><span class="mono">002304</span> 洋河股份
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>47.64%</b></td>
+          <td class="num"><b>233</b></td>
+          <td class="num">111</td>
+          <td class="num">23.80%</td>
+          <td class="num muted">29.01%</td>
+        </tr><tr class="row" data-acc="0.47586206896551725"
+          data-n="145">
+          <td><span class="mono">513050</span> 中概互联网ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>47.59%</b></td>
+          <td class="num"><b>145</b></td>
+          <td class="num">69</td>
+          <td class="num">26.13%</td>
+          <td class="num muted">42.16%</td>
+        </tr><tr class="row" data-acc="0.4750889679715303"
+          data-n="1124">
+          <td><span class="mono">601318</span> 中国平安
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>47.51%</b></td>
+          <td class="num"><b>1,124</b></td>
+          <td class="num">534</td>
+          <td class="num">98.60%</td>
+          <td class="num muted">51.67%</td>
+        </tr><tr class="row" data-acc="0.475"
+          data-n="40">
+          <td><span class="mono">513050</span> 中概互联网ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>47.50%</b></td>
+          <td class="num"><b>40</b></td>
+          <td class="num">19</td>
+          <td class="num">7.12%</td>
+          <td class="num muted">47.33%</td>
+        </tr><tr class="row" data-acc="0.47435897435897434"
+          data-n="78">
+          <td><span class="mono">000001</span> 平安银行
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>47.44%</b></td>
+          <td class="num"><b>78</b></td>
+          <td class="num">37</td>
+          <td class="num">6.06%</td>
+          <td class="num muted">44.49%</td>
+        </tr><tr class="row" data-acc="0.47368421052631576"
+          data-n="57">
+          <td><span class="mono">002594</span> 比亚迪
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>47.37%</b></td>
+          <td class="num"><b>57</b></td>
+          <td class="num">27</td>
+          <td class="num">6.39%</td>
+          <td class="num muted">52.58%</td>
+        </tr><tr class="row" data-acc="0.47368421052631576"
+          data-n="57">
+          <td><span class="mono">601318</span> 中国平安
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>47.37%</b></td>
+          <td class="num"><b>57</b></td>
+          <td class="num">27</td>
+          <td class="num">4.97%</td>
+          <td class="num muted">53.18%</td>
+        </tr><tr class="row" data-acc="0.47313432835820896"
+          data-n="670">
+          <td><span class="mono">601166</span> 兴业银行
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>47.31%</b></td>
+          <td class="num"><b>670</b></td>
+          <td class="num">317</td>
+          <td class="num">57.71%</td>
+          <td class="num muted">47.37%</td>
+        </tr><tr class="row" data-acc="0.472636815920398"
+          data-n="402">
+          <td><span class="mono">510050</span> 上证50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>47.26%</b></td>
+          <td class="num"><b>402</b></td>
+          <td class="num">190</td>
+          <td class="num">31.21%</td>
+          <td class="num muted">48.21%</td>
+        </tr><tr class="row" data-acc="0.47150259067357514"
+          data-n="193">
+          <td><span class="mono">002415</span> 海康威视
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>47.15%</b></td>
+          <td class="num"><b>193</b></td>
+          <td class="num">91</td>
+          <td class="num">20.32%</td>
+          <td class="num muted">48.42%</td>
+        </tr><tr class="row" data-acc="0.4714285714285714"
+          data-n="140">
+          <td><span class="mono">601988</span> 中国银行
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>47.14%</b></td>
+          <td class="num"><b>140</b></td>
+          <td class="num">66</td>
+          <td class="num">11.70%</td>
+          <td class="num muted">41.60%</td>
+        </tr><tr class="row" data-acc="0.47019867549668876"
+          data-n="453">
+          <td><span class="mono">601012</span> 隆基绿能
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>47.02%</b></td>
+          <td class="num"><b>453</b></td>
+          <td class="num">213</td>
+          <td class="num">53.80%</td>
+          <td class="num muted">43.71%</td>
+        </tr><tr class="row" data-acc="0.4700854700854701"
+          data-n="117">
+          <td><span class="mono">601088</span> 中国神华
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>47.01%</b></td>
+          <td class="num"><b>117</b></td>
+          <td class="num">55</td>
+          <td class="num">10.65%</td>
+          <td class="num muted">44.95%</td>
+        </tr><tr class="row" data-acc="0.46956521739130436"
+          data-n="115">
+          <td><span class="mono">600519</span> 贵州茅台
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>46.96%</b></td>
+          <td class="num"><b>115</b></td>
+          <td class="num">54</td>
+          <td class="num">8.82%</td>
+          <td class="num muted">44.71%</td>
+        </tr><tr class="row" data-acc="0.46938775510204084"
+          data-n="49">
+          <td><span class="mono">600030</span> 中信证券
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>46.94%</b></td>
+          <td class="num"><b>49</b></td>
+          <td class="num">23</td>
+          <td class="num">3.77%</td>
+          <td class="num muted">46.31%</td>
+        </tr><tr class="row" data-acc="0.46875"
+          data-n="32">
+          <td><span class="mono">000001</span> 平安银行
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>46.88%</b></td>
+          <td class="num"><b>32</b></td>
+          <td class="num">15</td>
+          <td class="num">2.49%</td>
+          <td class="num muted">53.81%</td>
+        </tr><tr class="row" data-acc="0.46875"
+          data-n="32">
+          <td><span class="mono">000016</span> 上证50
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>46.88%</b></td>
+          <td class="num"><b>32</b></td>
+          <td class="num">15</td>
+          <td class="num">2.45%</td>
+          <td class="num muted">42.50%</td>
+        </tr><tr class="row" data-acc="0.4678111587982833"
+          data-n="233">
+          <td><span class="mono">512480</span> 半导体ETF国联安
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>46.78%</b></td>
+          <td class="num"><b>233</b></td>
+          <td class="num">109</td>
+          <td class="num">56.55%</td>
+          <td class="num muted">52.18%</td>
+        </tr><tr class="row" data-acc="0.46578947368421053"
+          data-n="380">
+          <td><span class="mono">000858</span> 五粮液
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>46.58%</b></td>
+          <td class="num"><b>380</b></td>
+          <td class="num">177</td>
+          <td class="num">29.80%</td>
+          <td class="num muted">34.59%</td>
+        </tr><tr class="row" data-acc="0.46568627450980393"
+          data-n="204">
+          <td><span class="mono">002415</span> 海康威视
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>46.57%</b></td>
+          <td class="num"><b>204</b></td>
+          <td class="num">95</td>
+          <td class="num">21.38%</td>
+          <td class="num muted">48.01%</td>
+        </tr><tr class="row" data-acc="0.4647058823529412"
+          data-n="340">
+          <td><span class="mono">399006</span> 创业板指
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>46.47%</b></td>
+          <td class="num"><b>340</b></td>
+          <td class="num">158</td>
+          <td class="num">35.23%</td>
+          <td class="num muted">49.02%</td>
+        </tr><tr class="row" data-acc="0.463768115942029"
+          data-n="69">
+          <td><span class="mono">000949</span> 中证农业
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>46.38%</b></td>
+          <td class="num"><b>69</b></td>
+          <td class="num">32</td>
+          <td class="num">5.34%</td>
+          <td class="num muted">50.04%</td>
+        </tr><tr class="row" data-acc="0.46153846153846156"
+          data-n="247">
+          <td><span class="mono">000300</span> 沪深300
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>46.15%</b></td>
+          <td class="num"><b>247</b></td>
+          <td class="num">114</td>
+          <td class="num">19.21%</td>
+          <td class="num muted">44.09%</td>
+        </tr><tr class="row" data-acc="0.4594594594594595"
+          data-n="37">
+          <td><span class="mono">600028</span> 中国石化
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>45.95%</b></td>
+          <td class="num"><b>37</b></td>
+          <td class="num">17</td>
+          <td class="num">2.82%</td>
+          <td class="num muted">47.87%</td>
+        </tr><tr class="row" data-acc="0.4588744588744589"
+          data-n="231">
+          <td><span class="mono">601857</span> 中国石油
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>45.89%</b></td>
+          <td class="num"><b>231</b></td>
+          <td class="num">106</td>
+          <td class="num">20.62%</td>
+          <td class="num muted">46.70%</td>
+        </tr><tr class="row" data-acc="0.45843828715365237"
+          data-n="397">
+          <td><span class="mono">399998</span> 中证煤炭
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>45.84%</b></td>
+          <td class="num"><b>397</b></td>
+          <td class="num">182</td>
+          <td class="num">38.06%</td>
+          <td class="num muted">52.35%</td>
+        </tr><tr class="row" data-acc="0.45714285714285713"
+          data-n="315">
+          <td><span class="mono">601166</span> 兴业银行
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>45.71%</b></td>
+          <td class="num"><b>315</b></td>
+          <td class="num">144</td>
+          <td class="num">27.30%</td>
+          <td class="num muted">51.04%</td>
+        </tr><tr class="row" data-acc="0.45569620253164556"
+          data-n="474">
+          <td><span class="mono">399998</span> 中证煤炭
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>45.57%</b></td>
+          <td class="num"><b>474</b></td>
+          <td class="num">216</td>
+          <td class="num">45.23%</td>
+          <td class="num muted">47.23%</td>
+        </tr><tr class="row" data-acc="0.45454545454545453"
+          data-n="33">
+          <td><span class="mono">300750</span> 宁德时代
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>45.45%</b></td>
+          <td class="num"><b>33</b></td>
+          <td class="num">15</td>
+          <td class="num">6.92%</td>
+          <td class="num muted">48.22%</td>
+        </tr><tr class="row" data-acc="0.4537205081669691"
+          data-n="551">
+          <td><span class="mono">399396</span> 国证食品
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>45.37%</b></td>
+          <td class="num"><b>551</b></td>
+          <td class="num">250</td>
+          <td class="num">67.28%</td>
+          <td class="num muted">43.59%</td>
+        </tr><tr class="row" data-acc="0.4517543859649123"
+          data-n="228">
+          <td><span class="mono">000922</span> 中证红利
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>45.18%</b></td>
+          <td class="num"><b>228</b></td>
+          <td class="num">103</td>
+          <td class="num">21.33%</td>
+          <td class="num muted">52.20%</td>
+        </tr><tr class="row" data-acc="0.45161290322580644"
+          data-n="93">
+          <td><span class="mono">601899</span> 紫金矿业
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>45.16%</b></td>
+          <td class="num"><b>93</b></td>
+          <td class="num">42</td>
+          <td class="num">8.61%</td>
+          <td class="num muted">44.07%</td>
+        </tr><tr class="row" data-acc="0.4502923976608187"
+          data-n="171">
+          <td><span class="mono">000688</span> 科创50
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>45.03%</b></td>
+          <td class="num"><b>171</b></td>
+          <td class="num">77</td>
+          <td class="num">46.85%</td>
+          <td class="num muted">48.49%</td>
+        </tr><tr class="row" data-acc="0.4482758620689655"
+          data-n="174">
+          <td><span class="mono">601857</span> 中国石油
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>44.83%</b></td>
+          <td class="num"><b>174</b></td>
+          <td class="num">78</td>
+          <td class="num">15.56%</td>
+          <td class="num muted">45.80%</td>
+        </tr><tr class="row small" data-acc="0.4482758620689655"
+          data-n="29">
+          <td><span class="mono">000852</span> 中证1000
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>44.83%</b></td>
+          <td class="num"><b>29</b></td>
+          <td class="num">13</td>
+          <td class="num">2.24%</td>
+          <td class="num muted">53.90%</td>
+        </tr><tr class="row small" data-acc="0.4482758620689655"
+          data-n="29">
+          <td><span class="mono">600030</span> 中信证券
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>44.83%</b></td>
+          <td class="num"><b>29</b></td>
+          <td class="num">13</td>
+          <td class="num">2.26%</td>
+          <td class="num muted">45.13%</td>
+        </tr><tr class="row" data-acc="0.4462809917355372"
+          data-n="121">
+          <td><span class="mono">600900</span> 长江电力
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>44.63%</b></td>
+          <td class="num"><b>121</b></td>
+          <td class="num">54</td>
+          <td class="num">9.96%</td>
+          <td class="num muted">51.52%</td>
+        </tr><tr class="row" data-acc="0.44583333333333336"
+          data-n="240">
+          <td><span class="mono">600900</span> 长江电力
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>44.58%</b></td>
+          <td class="num"><b>240</b></td>
+          <td class="num">107</td>
+          <td class="num">20.00%</td>
+          <td class="num muted">53.75%</td>
+        </tr><tr class="row" data-acc="0.4457831325301205"
+          data-n="166">
+          <td><span class="mono">601088</span> 中国神华
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>44.58%</b></td>
+          <td class="num"><b>166</b></td>
+          <td class="num">74</td>
+          <td class="num">15.24%</td>
+          <td class="num muted">43.99%</td>
+        </tr><tr class="row" data-acc="0.4444444444444444"
+          data-n="36">
+          <td><span class="mono">601012</span> 隆基绿能
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>44.44%</b></td>
+          <td class="num"><b>36</b></td>
+          <td class="num">16</td>
+          <td class="num">4.36%</td>
+          <td class="num muted">37.70%</td>
+        </tr><tr class="row" data-acc="0.4440677966101695"
+          data-n="295">
+          <td><span class="mono">518880</span> 黄金ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>44.41%</b></td>
+          <td class="num"><b>295</b></td>
+          <td class="num">131</td>
+          <td class="num">38.02%</td>
+          <td class="num muted">55.03%</td>
+        </tr><tr class="row" data-acc="0.4418604651162791"
+          data-n="43">
+          <td><span class="mono">601668</span> 中国建筑
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>44.19%</b></td>
+          <td class="num"><b>43</b></td>
+          <td class="num">19</td>
+          <td class="num">4.27%</td>
+          <td class="num muted">55.21%</td>
+        </tr><tr class="row" data-acc="0.44171779141104295"
+          data-n="163">
+          <td><span class="mono">600030</span> 中信证券
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>44.17%</b></td>
+          <td class="num"><b>163</b></td>
+          <td class="num">72</td>
+          <td class="num">12.56%</td>
+          <td class="num muted">45.61%</td>
+        </tr><tr class="row" data-acc="0.44"
+          data-n="450">
+          <td><span class="mono">601012</span> 隆基绿能
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>44.00%</b></td>
+          <td class="num"><b>450</b></td>
+          <td class="num">198</td>
+          <td class="num">53.57%</td>
+          <td class="num muted">43.10%</td>
+        </tr><tr class="row" data-acc="0.4396887159533074"
+          data-n="514">
+          <td><span class="mono">000858</span> 五粮液
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>43.97%</b></td>
+          <td class="num"><b>514</b></td>
+          <td class="num">226</td>
+          <td class="num">40.00%</td>
+          <td class="num muted">38.60%</td>
+        </tr><tr class="row" data-acc="0.43859649122807015"
+          data-n="57">
+          <td><span class="mono">000688</span> 科创50
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>43.86%</b></td>
+          <td class="num"><b>57</b></td>
+          <td class="num">25</td>
+          <td class="num">15.20%</td>
+          <td class="num muted">49.07%</td>
+        </tr><tr class="row" data-acc="0.43575418994413406"
+          data-n="179">
+          <td><span class="mono">512480</span> 半导体ETF国联安
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>43.58%</b></td>
+          <td class="num"><b>179</b></td>
+          <td class="num">78</td>
+          <td class="num">44.97%</td>
+          <td class="num muted">50.75%</td>
+        </tr><tr class="row" data-acc="0.43478260869565216"
+          data-n="69">
+          <td><span class="mono">601988</span> 中国银行
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>43.48%</b></td>
+          <td class="num"><b>69</b></td>
+          <td class="num">30</td>
+          <td class="num">5.75%</td>
+          <td class="num muted">41.70%</td>
+        </tr><tr class="row" data-acc="0.4340490797546012"
+          data-n="652">
+          <td><span class="mono">000651</span> 格力电器
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>43.40%</b></td>
+          <td class="num"><b>652</b></td>
+          <td class="num">283</td>
+          <td class="num">51.95%</td>
+          <td class="num muted">49.72%</td>
+        </tr><tr class="row" data-acc="0.43283582089552236"
+          data-n="67">
+          <td><span class="mono">601668</span> 中国建筑
+              <span class="tag">个股</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>43.28%</b></td>
+          <td class="num"><b>67</b></td>
+          <td class="num">29</td>
+          <td class="num">6.61%</td>
+          <td class="num muted">51.28%</td>
+        </tr><tr class="row" data-acc="0.4325"
+          data-n="400">
+          <td><span class="mono">399396</span> 国证食品
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>43.25%</b></td>
+          <td class="num"><b>400</b></td>
+          <td class="num">173</td>
+          <td class="num">48.96%</td>
+          <td class="num muted">41.25%</td>
+        </tr><tr class="row" data-acc="0.4266666666666667"
+          data-n="225">
+          <td><span class="mono">600519</span> 贵州茅台
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>42.67%</b></td>
+          <td class="num"><b>225</b></td>
+          <td class="num">96</td>
+          <td class="num">17.46%</td>
+          <td class="num muted">41.04%</td>
+        </tr><tr class="row" data-acc="0.4260089686098655"
+          data-n="223">
+          <td><span class="mono">601166</span> 兴业银行
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>42.60%</b></td>
+          <td class="num"><b>223</b></td>
+          <td class="num">95</td>
+          <td class="num">19.24%</td>
+          <td class="num muted">51.16%</td>
+        </tr><tr class="row" data-acc="0.42021276595744683"
+          data-n="188">
+          <td><span class="mono">588000</span> 科创50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>42.02%</b></td>
+          <td class="num"><b>188</b></td>
+          <td class="num">79</td>
+          <td class="num">57.14%</td>
+          <td class="num muted">44.98%</td>
+        </tr><tr class="row" data-acc="0.41935483870967744"
+          data-n="31">
+          <td><span class="mono">600887</span> 伊利股份
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>41.94%</b></td>
+          <td class="num"><b>31</b></td>
+          <td class="num">13</td>
+          <td class="num">2.40%</td>
+          <td class="num muted">44.39%</td>
+        </tr><tr class="row" data-acc="0.4186046511627907"
+          data-n="43">
+          <td><span class="mono">513050</span> 中概互联网ETF易方达
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>41.86%</b></td>
+          <td class="num"><b>43</b></td>
+          <td class="num">18</td>
+          <td class="num">7.68%</td>
+          <td class="num muted">47.14%</td>
+        </tr><tr class="row" data-acc="0.41830065359477125"
+          data-n="153">
+          <td><span class="mono">000922</span> 中证红利
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>41.83%</b></td>
+          <td class="num"><b>153</b></td>
+          <td class="num">64</td>
+          <td class="num">14.22%</td>
+          <td class="num muted">50.65%</td>
+        </tr><tr class="row" data-acc="0.4178470254957507"
+          data-n="706">
+          <td><span class="mono">600036</span> 招商银行
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>41.78%</b></td>
+          <td class="num"><b>706</b></td>
+          <td class="num">295</td>
+          <td class="num">54.35%</td>
+          <td class="num muted">49.65%</td>
+        </tr><tr class="row" data-acc="0.41739130434782606"
+          data-n="115">
+          <td><span class="mono">601899</span> 紫金矿业
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>41.74%</b></td>
+          <td class="num"><b>115</b></td>
+          <td class="num">48</td>
+          <td class="num">10.70%</td>
+          <td class="num muted">45.12%</td>
+        </tr><tr class="row small" data-acc="0.4166666666666667"
+          data-n="24">
+          <td><span class="mono">000852</span> 中证1000
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>41.67%</b></td>
+          <td class="num"><b>24</b></td>
+          <td class="num">10</td>
+          <td class="num">1.86%</td>
+          <td class="num muted">51.74%</td>
+        </tr><tr class="row" data-acc="0.41566265060240964"
+          data-n="166">
+          <td><span class="mono">518880</span> 黄金ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>41.57%</b></td>
+          <td class="num"><b>166</b></td>
+          <td class="num">69</td>
+          <td class="num">21.64%</td>
+          <td class="num muted">59.97%</td>
+        </tr><tr class="row" data-acc="0.41333333333333333"
+          data-n="300">
+          <td><span class="mono">399396</span> 国证食品
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>41.33%</b></td>
+          <td class="num"><b>300</b></td>
+          <td class="num">124</td>
+          <td class="num">36.95%</td>
+          <td class="num muted">38.92%</td>
+        </tr><tr class="row small" data-acc="0.4117647058823529"
+          data-n="17">
+          <td><span class="mono">000300</span> 沪深300
+              <span class="tag">指数</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>41.18%</b></td>
+          <td class="num"><b>17</b></td>
+          <td class="num">7</td>
+          <td class="num">1.31%</td>
+          <td class="num muted">48.73%</td>
+        </tr><tr class="row" data-acc="0.4106382978723404"
+          data-n="470">
+          <td><span class="mono">000016</span> 上证50
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>41.06%</b></td>
+          <td class="num"><b>470</b></td>
+          <td class="num">193</td>
+          <td class="num">35.71%</td>
+          <td class="num muted">45.52%</td>
+        </tr><tr class="row" data-acc="0.40848806366047746"
+          data-n="377">
+          <td><span class="mono">600519</span> 贵州茅台
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>40.85%</b></td>
+          <td class="num"><b>377</b></td>
+          <td class="num">154</td>
+          <td class="num">29.02%</td>
+          <td class="num muted">43.80%</td>
+        </tr><tr class="row" data-acc="0.40816326530612246"
+          data-n="49">
+          <td><span class="mono">000001</span> 上证指数
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>40.82%</b></td>
+          <td class="num"><b>49</b></td>
+          <td class="num">20</td>
+          <td class="num">3.75%</td>
+          <td class="num muted">47.17%</td>
+        </tr><tr class="row small" data-acc="0.4074074074074074"
+          data-n="27">
+          <td><span class="mono">601857</span> 中国石油
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>40.74%</b></td>
+          <td class="num"><b>27</b></td>
+          <td class="num">11</td>
+          <td class="num">2.43%</td>
+          <td class="num muted">45.55%</td>
+        </tr><tr class="row" data-acc="0.4031805425631431"
+          data-n="1069">
+          <td><span class="mono">601088</span> 中国神华
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>40.32%</b></td>
+          <td class="num"><b>1,069</b></td>
+          <td class="num">431</td>
+          <td class="num">100.00%</td>
+          <td class="num muted">43.22%</td>
+        </tr><tr class="row" data-acc="0.4"
+          data-n="90">
+          <td><span class="mono">399440</span> 国证钢铁
+              <span class="tag">指数</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>40.00%</b></td>
+          <td class="num"><b>90</b></td>
+          <td class="num">36</td>
+          <td class="num">13.24%</td>
+          <td class="num muted">47.35%</td>
+        </tr><tr class="row" data-acc="0.4"
+          data-n="35">
+          <td><span class="mono">000016</span> 上证50
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>40.00%</b></td>
+          <td class="num"><b>35</b></td>
+          <td class="num">14</td>
+          <td class="num">2.65%</td>
+          <td class="num muted">48.37%</td>
+        </tr><tr class="row small" data-acc="0.4"
+          data-n="10">
+          <td><span class="mono">000333</span> 美的集团
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>40.00%</b></td>
+          <td class="num"><b>10</b></td>
+          <td class="num">4</td>
+          <td class="num">1.33%</td>
+          <td class="num muted">51.66%</td>
+        </tr><tr class="row small" data-acc="0.391304347826087"
+          data-n="23">
+          <td><span class="mono">399303</span> 国证2000
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>39.13%</b></td>
+          <td class="num"><b>23</b></td>
+          <td class="num">9</td>
+          <td class="num">2.48%</td>
+          <td class="num muted">52.10%</td>
+        </tr><tr class="row" data-acc="0.3894736842105263"
+          data-n="95">
+          <td><span class="mono">600887</span> 伊利股份
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>38.95%</b></td>
+          <td class="num"><b>95</b></td>
+          <td class="num">37</td>
+          <td class="num">7.40%</td>
+          <td class="num muted">46.22%</td>
+        </tr><tr class="row" data-acc="0.38509316770186336"
+          data-n="161">
+          <td><span class="mono">512480</span> 半导体ETF国联安
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>38.51%</b></td>
+          <td class="num"><b>161</b></td>
+          <td class="num">62</td>
+          <td class="num">42.59%</td>
+          <td class="num muted">52.38%</td>
+        </tr><tr class="row small" data-acc="0.38461538461538464"
+          data-n="26">
+          <td><span class="mono">588000</span> 科创50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>38.46%</b></td>
+          <td class="num"><b>26</b></td>
+          <td class="num">10</td>
+          <td class="num">7.95%</td>
+          <td class="num muted">47.09%</td>
+        </tr><tr class="row" data-acc="0.3835616438356164"
+          data-n="146">
+          <td><span class="mono">601668</span> 中国建筑
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>38.36%</b></td>
+          <td class="num"><b>146</b></td>
+          <td class="num">56</td>
+          <td class="num">14.43%</td>
+          <td class="num muted">52.57%</td>
+        </tr><tr class="row" data-acc="0.37719298245614036"
+          data-n="114">
+          <td><span class="mono">510050</span> 上证50ETF华夏
+              <span class="tag">ETF</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>37.72%</b></td>
+          <td class="num"><b>114</b></td>
+          <td class="num">43</td>
+          <td class="num">8.91%</td>
+          <td class="num muted">46.05%</td>
+        </tr><tr class="row" data-acc="0.37606837606837606"
+          data-n="117">
+          <td><span class="mono">601899</span> 紫金矿业
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>37.61%</b></td>
+          <td class="num"><b>117</b></td>
+          <td class="num">44</td>
+          <td class="num">10.79%</td>
+          <td class="num muted">46.96%</td>
+        </tr><tr class="row small" data-acc="0.3684210526315789"
+          data-n="19">
+          <td><span class="mono">000922</span> 中证红利
+              <span class="tag">指数</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>36.84%</b></td>
+          <td class="num"><b>19</b></td>
+          <td class="num">7</td>
+          <td class="num">1.77%</td>
+          <td class="num muted">49.91%</td>
+        </tr><tr class="row small" data-acc="0.35714285714285715"
+          data-n="14">
+          <td><span class="mono">000300</span> 沪深300
+              <span class="tag">指数</span></td>
+          <td class="num">H3</td>
+          <td class="num acc"><b>35.71%</b></td>
+          <td class="num"><b>14</b></td>
+          <td class="num">5</td>
+          <td class="num">1.08%</td>
+          <td class="num muted">49.27%</td>
+        </tr><tr class="row" data-acc="0.35036496350364965"
+          data-n="137">
+          <td><span class="mono">518880</span> 黄金ETF华安
+              <span class="tag">ETF</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>35.04%</b></td>
+          <td class="num"><b>137</b></td>
+          <td class="num">48</td>
+          <td class="num">18.10%</td>
+          <td class="num muted">64.86%</td>
+        </tr><tr class="row" data-acc="0.348993288590604"
+          data-n="149">
+          <td><span class="mono">931079</span> 5G通信
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>34.90%</b></td>
+          <td class="num"><b>149</b></td>
+          <td class="num">52</td>
+          <td class="num">38.70%</td>
+          <td class="num muted">68.31%</td>
+        </tr><tr class="row" data-acc="0.3482142857142857"
+          data-n="112">
+          <td><span class="mono">002304</span> 洋河股份
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>34.82%</b></td>
+          <td class="num"><b>112</b></td>
+          <td class="num">39</td>
+          <td class="num">11.32%</td>
+          <td class="num muted">33.47%</td>
+        </tr><tr class="row" data-acc="0.32978723404255317"
+          data-n="94">
+          <td><span class="mono">600028</span> 中国石化
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>32.98%</b></td>
+          <td class="num"><b>94</b></td>
+          <td class="num">31</td>
+          <td class="num">7.18%</td>
+          <td class="num muted">49.39%</td>
+        </tr><tr class="row" data-acc="0.3157894736842105"
+          data-n="38">
+          <td><span class="mono">000858</span> 五粮液
+              <span class="tag">个股</span></td>
+          <td class="num">H5</td>
+          <td class="num acc"><b>31.58%</b></td>
+          <td class="num"><b>38</b></td>
+          <td class="num">12</td>
+          <td class="num">2.95%</td>
+          <td class="num muted">41.78%</td>
+        </tr><tr class="row small" data-acc="0.2962962962962963"
+          data-n="27">
+          <td><span class="mono">600036</span> 招商银行
+              <span class="tag">个股</span></td>
+          <td class="num">H1</td>
+          <td class="num acc"><b>29.63%</b></td>
+          <td class="num"><b>27</b></td>
+          <td class="num">8</td>
+          <td class="num">2.06%</td>
+          <td class="num muted">52.22%</td>
+        </tr><tr class="row small" data-acc="0.2857142857142857"
+          data-n="21">
+          <td><span class="mono">399396</span> 国证食品
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>28.57%</b></td>
+          <td class="num"><b>21</b></td>
+          <td class="num">6</td>
+          <td class="num">2.62%</td>
+          <td class="num muted">37.41%</td>
+        </tr><tr class="row small" data-acc="0.2857142857142857"
+          data-n="7">
+          <td><span class="mono">002415</span> 海康威视
+              <span class="tag">个股</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>28.57%</b></td>
+          <td class="num"><b>7</b></td>
+          <td class="num">2</td>
+          <td class="num">0.75%</td>
+          <td class="num muted">46.42%</td>
+        </tr><tr class="row small" data-acc="0.26666666666666666"
+          data-n="15">
+          <td><span class="mono">601012</span> 隆基绿能
+              <span class="tag">个股</span></td>
+          <td class="num">H10</td>
+          <td class="num acc"><b>26.67%</b></td>
+          <td class="num"><b>15</b></td>
+          <td class="num">4</td>
+          <td class="num">1.80%</td>
+          <td class="num muted">42.99%</td>
+        </tr><tr class="row" data-acc="0.07894736842105263"
+          data-n="38">
+          <td><span class="mono">399997</span> 中证白酒
+              <span class="tag">指数</span></td>
+          <td class="num">H20</td>
+          <td class="num acc"><b>7.89%</b></td>
+          <td class="num"><b>38</b></td>
+          <td class="num">3</td>
+          <td class="num">3.68%</td>
+          <td class="num muted">36.01%</td>
+        </tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>怎么读这张表</h2>
+    <div class="note">
+      <p><b>准确率只对「发出预测的那些时点」成立。</b>覆盖率低说明大多数时候选择了中性，把中性的时点
+      算成「没错」会让数字失真，所以这里始终同时给出预测次数。</p>
+      <p><b>排名靠前≠更可靠。</b>预测次数少的标的很容易出现 60%+ 的准确率，这是小样本波动，
+      不是能力差异；请对照 95% 区间与「相对对照」列判断。</p>
+      <p><b>这不是未来准确率。</b>测试段是历史后 25%，且整段历史已被本项目反复研究；
+      真实前瞻表现需要等新数据。所有数值取自 <code>reports/accuracy/accuracy.json</code> 的测试段汇总。</p>
+    </div>
+  </section>
+
+  <footer>
+    生成于 2026-11-06T09:26:55 · 方法 accuracy_abstention_v1
+    · 全池准确率 50.38%（31,148/61,821）
+    · 排序仅依据历史条件准确率，不构成投资建议。
+  </footer>
+</main>
+<script>
+const rows = () => [...document.querySelectorAll('#rank tbody tr')];
+let minN = 0, keyword = '';
+function apply() {
+  let shown = 0;
+  rows().forEach(r => {
+    const n = +r.dataset.n;
+    const text = r.textContent.toLowerCase();
+    const ok = n >= minN && (!keyword || text.includes(keyword));
+    r.hidden = !ok; if (ok) shown++;
+  });
+  document.getElementById('status').textContent = `显示 ${shown} / ${rows().length} 个标的`;
+}
+document.querySelectorAll('button.chip').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('button.chip').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); minN = +b.dataset.min; apply();
+}));
+document.getElementById('q').addEventListener('input', e => {
+  keyword = e.target.value.trim().toLowerCase(); apply();
+});
+const q2 = document.getElementById('q2');
+q2.addEventListener('input', () => {
+  const k = q2.value.trim().toLowerCase(); let shown = 0;
+  const list = [...document.querySelectorAll('#detail tbody tr')];
+  list.forEach(r => {
+    const ok = !k || r.textContent.toLowerCase().includes(k);
+    r.hidden = !ok; if (ok) shown++;
+  });
+  document.getElementById('status2').textContent = `显示 ${shown} / ${list.length} 行`;
+});
+let dir = -1, key = 'acc';
+document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.key;
+  dir = (k === key) ? -dir : -1; key = k;
+  const body = document.querySelector('#rank tbody');
+  const sorted = rows().sort((a, b) => dir * (a.dataset[k] - b.dataset[k]));
+  sorted.forEach(r => body.appendChild(r));
+  document.querySelectorAll('#rank tbody tr').forEach((r, i) => r.cells[0].textContent = i + 1);
+}));
+apply();
+</script>
+</body></html>

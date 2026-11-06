@@ -104,6 +104,18 @@ def cmd_accuracy(args) -> int:
     return 0
 
 
+def cmd_ranking(args) -> int:
+    from .accuracy_ranking import build_from_json
+
+    cfg = _load_cfg(args)
+    src = cfg.report_path / "accuracy" / "accuracy.json"
+    if not src.exists():
+        print(f"找不到 {src}，请先运行 accuracy", file=sys.stderr)
+        return 2
+    print(build_from_json(src))
+    return 0
+
+
 def cmd_placebo(args) -> int:
     from .diagnose import placebo_test
 
@@ -165,6 +177,9 @@ def build_parser() -> argparse.ArgumentParser:
     acc.add_argument("--min-fit-signals", type=int, default=60)
     acc.add_argument("--min-calibration-predictions", type=int, default=30)
     acc.set_defaults(func=cmd_accuracy)
+
+    rank = sub.add_parser("ranking", help="按标的历史预测准确率生成排行 HTML（中性不计入分母）")
+    rank.set_defaults(func=cmd_ranking)
 
     return p
 
