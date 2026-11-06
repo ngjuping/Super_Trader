@@ -97,10 +97,30 @@ def cmd_personalize(args) -> int:
 
 
 def cmd_accuracy(args) -> int:
-    from .accuracy import AccuracyConfig, run_accuracy
+    from .accuracy import AccuracyConfig, AdaptiveConfig, run_accuracy
     config = AccuracyConfig(min_fit_signals=args.min_fit_signals,
                             min_calibration_predictions=args.min_calibration_predictions)
-    run_accuracy(_load_cfg(args), pool=args.pool, config=config, limit=args.limit)
+    adaptive = None
+    if args.mode == "adaptive":
+        adaptive = AdaptiveConfig(blocks=args.blocks, trailing=args.trailing,
+                                  health_min_acc=args.health_min_acc,
+                                  drift_weight=args.drift_weight)
+    run_accuracy(_load_cfg(args), pool=args.pool, config=config, limit=args.limit,
+                 adaptive=adaptive)
+    return 0
+
+
+def cmd_fullfit(args) -> int:
+    from .fullfit import FullFitConfig, run_fullfit
+    from .fullfit_report import build_fullfit_html
+
+    cfg = _load_cfg(args)
+    config = FullFitConfig(half_life_days=args.half_life, target_accuracy=args.target,
+                           max_rules=args.max_rules, min_eff_n=args.min_eff_n,
+                           weight_floor=args.weight_floor, min_coverage=args.min_coverage)
+    payload = run_fullfit(cfg, pool=args.pool, config=config, limit=args.limit)
+    out = build_fullfit_html(payload, cfg.report_path / "fullfit" / "ranking_fullfit.html")
+    print(out)
     return 0
 
 
@@ -176,10 +196,28 @@ def build_parser() -> argparse.ArgumentParser:
     acc.add_argument("--limit", type=int, default=None)
     acc.add_argument("--min-fit-signals", type=int, default=60)
     acc.add_argument("--min-calibration-predictions", type=int, default=30)
+    acc.add_argument("--mode", choices=["frozen", "adaptive"], default="frozen",
+                     help="frozen=一套冻结参数；adaptive=测试期滚动再校准+漂移修正+健康闸门")
+    acc.add_argument("--blocks", type=int, default=8, help="adaptive 模式下测试段重估块数")
+    acc.add_argument("--trailing", type=int, default=500, help="每次重估使用的最近样本数")
+    acc.add_argument("--health-min-acc", type=float, default=0.5,
+                     help="最近若干块实测低于此值时转为中性")
+    acc.add_argument("--drift-weight", type=float, default=1.0, help="无条件涨率修正强度")
     acc.set_defaults(func=cmd_accuracy)
 
     rank = sub.add_parser("ranking", help="按标的历史预测准确率生成排行 HTML（中性不计入分母）")
     rank.set_defaults(func=cmd_ranking)
+
+    ff = sub.add_parser("fullfit", help="全历史拟合（不分验证/测试集，近期加权）并输出排行 HTML")
+    ff.add_argument("--pool", default="mainstream")
+    ff.add_argument("--limit", type=int, default=None)
+    ff.add_argument("--half-life", type=float, default=365.0, help="权重半衰期（天）")
+    ff.add_argument("--weight-floor", type=float, default=0.10, help="老数据权重下限")
+    ff.add_argument("--min-coverage", type=float, default=0.05, help="集成最低覆盖率")
+    ff.add_argument("--min-eff-n", type=float, default=30.0, help="有效样本量下限")
+    ff.add_argument("--target", type=float, default=0.55)
+    ff.add_argument("--max-rules", type=int, default=5)
+    ff.set_defaults(func=cmd_fullfit)
 
     return p
 
