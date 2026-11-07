@@ -69,6 +69,21 @@ def redact(text: str, secrets: tuple[str, ...]) -> str:
     return out
 
 
+def build_get_query(params: dict) -> str:
+    """拼 GET 查询。cursor 按官方 pybit 原样拼进 URL，不再把 % 编成 %25。"""
+    parts = []
+    for key in sorted(params):
+        value = params[key]
+        if value is None:
+            continue
+        text = str(value)
+        if key == "cursor":
+            parts.append(key + "=" + text)
+        else:
+            parts.append(urllib.parse.urlencode({key: text}))
+    return "&".join(parts)
+
+
 def sign_v5(secret: str, timestamp: str, api_key: str, recv_window: str, payload: str) -> str:
     message = f"{timestamp}{api_key}{recv_window}{payload}"
     return hmac.new(secret.encode(), message.encode(), hashlib.sha256).hexdigest()
@@ -112,7 +127,7 @@ class BybitPrivateClient:
         if (method, path) not in ALLOWED:
             raise PrivatePathError(f"拒绝私有路径 {method} {path}")
         params = {key: value for key, value in (params or {}).items() if value is not None}
-        query = urllib.parse.urlencode(sorted(params.items()))
+        query = build_get_query(params)
         payload = json.dumps(body, separators=(",", ":")) if body is not None else query
         timestamp = str(int(self.clock()))
         signature = sign_v5(
@@ -182,13 +197,12 @@ class BybitPrivateClient:
                 if settle:
                     base["settleCoin"] = settle
                 if category != "spot":
-                    for item in self._pages("/v5/position/list", base):
-                        position = _parse_position(item)
-                        positions.append(position)
-                        if position.symbol and position.leverage is not None:
-                            leverage[position.symbol] = position.leverage
-                        if position.symbol:
-                            modes[position.symbol] = position.position_idx
+                    raw_rows = self._pages("/v5/position/list", base)
+                    for item in raw_rows:
+                        positions.append(_parse_position(item))
+                    folded_leverage, folded_modes = fold_position_rows(raw_rows)
+                    leverage.update(folded_leverage)
+                    modes.update(folded_modes)
                 filters = ORDER_FILTERS if category not in {"option", "spot"} else ("Order",)
                 for order_filter in filters:
                     query = dict(base)
@@ -231,6 +245,42 @@ class BybitPrivateClient:
             instruments=instruments, marks=marks, pages_complete=True,
             categories_checked=tuple(categories),
         )
+
+
+def fold_position_rows(rows: list[dict]) -> tuple[dict[str, float], dict[str, int]]:
+    """同一 symbol + positionIdx 的杠杆必须一致，否则该合约杠杆视为未知。
+
+    Bybit 文档里 positionIdx 0/1/2 各表示一个仓位槽，positionStatus 只有
+    Normal、Liq、Adl。文档没有说可以丢掉空字段行，也没有说后一页覆盖前一页。
+    两个槽位记录的杠杆不同就不开仓。
+    """
+    slots: dict[tuple[str, int], set[float | None]] = {}
+    indexes: dict[str, set[int]] = {}
+    for row in rows:
+        symbol = str(row.get("symbol") or "")
+        if not symbol:
+            continue
+        idx = int(row.get("positionIdx") or 0)
+        raw = row.get("leverage")
+        value = None if raw in (None, "") else float(raw)
+        slots.setdefault((symbol, idx), set()).add(value)
+        indexes.setdefault(symbol, set()).add(idx)
+    leverage: dict[str, float] = {}
+    modes: dict[str, int] = {}
+    for symbol, idxs in indexes.items():
+        modes[symbol] = 0 if idxs == {0} else 1
+        agreed: list[float] = []
+        conflict = False
+        for idx in idxs:
+            values = slots[(symbol, idx)]
+            if len(values) != 1 or None in values:
+                conflict = True
+                break
+            agreed.append(next(iter(values)))
+        if conflict or not agreed or len(set(agreed)) != 1:
+            continue
+        leverage[symbol] = agreed[0]
+    return leverage, modes
 
 
 def _parse_position(row: dict) -> ExchangePosition:

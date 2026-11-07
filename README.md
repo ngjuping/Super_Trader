@@ -123,7 +123,7 @@ H1/H3/H5/H10/H20指日线持有期，不指日线/60分钟等K线频率。
 
 `python -m super_trader crypto-xs` 把上面的横截面问题搬到 24 小时 UTC 日线：同一时刻给多个交易对排名，再做纸面组合。它不是 BTC 单币择时，也不使用 A 股涨跌停或中国交易日历。
 
-产品类别必须写明。`spot` 只做多，剩余是现金，不借券；`linear` / `inverse` 才允许多空。研究默认的交易对、一万 USDT 纸面权益、费用和滑点都写在 `docs/CRYPTO_XS.md`，它们不是实盘预算。`crypto-xs --live` 会拒绝。实盘横截面见 `docs/LIVE_DEPLOY.md`：只允许 LINK、AVAX、SUI 的 USDT 永续，虚拟预算 100 USDT，而且杠杆不是 1 倍时不开仓。仓库里 A 股 50.38% 的方向准确率不适用于加密货币。
+产品类别必须写明。`spot` 只做多，剩余是现金，不借券；`linear` / `inverse` 才允许多空。研究默认的交易对、一万 USDT 纸面权益、费用和滑点都写在 `docs/CRYPTO_XS.md`，它们不是实盘预算。`crypto-xs --live` 会拒绝。实盘监督进程是 `crypto-xs-live --supervise`，说明在 `docs/LIVE_DEPLOY.md`。它只做 AVAX、SUI、BCH 的 USDT 永续，虚拟预算 100 USDT，交易所杠杆必须正好是 2 且不把总敞口放大，也不把账户说成独占。仓库里 A 股 50.38% 的方向准确率不适用于加密货币。
 
 ## 快速开始
 

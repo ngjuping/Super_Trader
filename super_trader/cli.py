@@ -172,6 +172,58 @@ def cmd_ranking(args) -> int:
     return 0
 
 
+def _serve(cfg, broker, market_fn, interval_s: int) -> int:
+    import signal
+    import time
+
+    from .crypto_supervisor import run_supervisor
+
+    stop = {"flag": False}
+
+    def _stop(signum, _frame):
+        stop["flag"] = True
+
+    signal.signal(signal.SIGTERM, _stop)
+    signal.signal(signal.SIGINT, _stop)
+
+    def sleep_fn(seconds: int) -> bool:
+        end = time.time() + seconds
+        while time.time() < end:
+            if stop["flag"]:
+                return False
+            time.sleep(min(1.0, max(0.0, end - time.time())))
+        return not stop["flag"]
+
+    print("监督进程启动。账户不是独占账户。杠杆不是正好 2 或存在他人仓单时不开新仓。", flush=True)
+    return run_supervisor(
+        cfg, broker, market_fn, sleep_fn=sleep_fn, now_fn=lambda: int(time.time() * 1000),
+        stop_fn=lambda: stop["flag"], interval_s=interval_s,
+    )
+
+
+def _supervise(cfg, client, interval_s: int) -> int:
+    import time
+
+    from .bybit_public import bars_to_frame, default_getter, fetch_klines
+    from .crypto_live import FROZEN_UNIVERSE, MarketView, closed_daily_view
+    from .crypto_xs import prepare_panels
+
+    def market_fn():
+        now_ms = int(time.time() * 1000)
+        try:
+            getter = default_getter()
+            frames = {}
+            for symbol in FROZEN_UNIVERSE:
+                bars = fetch_klines("linear", symbol, as_of_ms=now_ms, getter=getter)
+                frames[symbol] = bars_to_frame(bars)
+            _open, close, turnover = prepare_panels(frames)
+            return closed_daily_view(close, turnover, now_ms)
+        except Exception:
+            return MarketView(0, True)
+
+    return _serve(cfg, client, market_fn, interval_s)
+
+
 def cmd_crypto_xs_live(args) -> int:
     """实盘入口。未解锁时只打印阻断项，不创建私有客户端。"""
     import os
@@ -190,13 +242,24 @@ def cmd_crypto_xs_live(args) -> int:
         print(str(exc), file=sys.stderr)
         return 2
     report = readiness(cfg)
-    if args.preflight or not (args.once or args.monitor):
+    if args.preflight or not (args.once or args.monitor or args.supervise):
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 2 if report["entries_blocked"] else 0
+    if args.supervise and args.interval < 1:
+        print("监督间隔必须至少 1 秒", file=sys.stderr)
+        return 2
     if not cfg.entries_opted_in:
         print(json.dumps(report, ensure_ascii=False, indent=2))
         print("开仓条件没有满足，未连接私有交易接口。", file=sys.stderr)
         return 2
+    fixture = os.environ.get("SUPER_TRADER_OFFLINE_FIXTURE", "").strip()
+    if fixture:
+        if not args.supervise:
+            print("离线夹具只能用于 --supervise 进程测试", file=sys.stderr)
+            return 2
+        from .crypto_supervisor import offline_fixture
+        broker, market_fn = offline_fixture(fixture)
+        return _serve(cfg, broker, market_fn, args.interval)
     try:
         credentials = load_credentials(os.environ)
     except Exception as exc:
@@ -205,6 +268,8 @@ def cmd_crypto_xs_live(args) -> int:
     client = BybitPrivateClient(
         credentials, urllib_transport(), lambda: int(time.time() * 1000),
     )
+    if args.supervise:
+        return _supervise(cfg, client, args.interval)
     ledger = Ledger.load(cfg.ledger_path)
     now_ms = int(time.time() * 1000)
     if args.monitor:
@@ -486,12 +551,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     live = sub.add_parser(
         "crypto-xs-live",
-        help="Bybit 线性合约横截面实盘。默认只做核验，杠杆不是 1 时不开仓",
+        help="Bybit 线性合约横截面实盘。默认只做核验，杠杆不是正好 2 时不开仓",
     )
     live.add_argument("--config", default="config/crypto_xs_live.example.json")
     live.add_argument("--preflight", action="store_true", help="只打印阻断项，不连接交易所")
     live.add_argument("--once", action="store_true", help="跑一轮。条件不满足时不会下单")
-    live.add_argument("--monitor", action="store_true", help="只做风险检查，不新开横截面篮子")
+    live.add_argument("--monitor", action="store_true", help="只做一次风险检查，不新开横截面篮子")
+    live.add_argument("--supervise", action="store_true",
+                      help="持续监督：UTC 日线收盘后再平衡，其间只盯 20 USDT 亏损")
+    live.add_argument("--interval", type=int, default=60, help="监督循环间隔秒数，默认 60")
     live.set_defaults(func=cmd_crypto_xs_live)
 
     return p

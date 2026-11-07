@@ -1,24 +1,63 @@
 # Bybit linear cross-section: live handoff
 
-This build does not place orders, change leverage, transfer funds, or deploy a service. The cloud environment did not call the account. Facts below are the sanitized read-only preflight from the approved host at 2026-11-07 22:10 MYT.
+Cloud does not place orders, change leverage, transfer funds, or start the service. Host start is `crypto-xs-live --supervise` after the gates below. This is not an exclusive-account claim.
 
-## Unresolved isolation blocker
+## Owner acceptance, 2026-11-07 22:48
 
-UID `211344229` is a mainnet master UTA2 account in `ISOLATED_MARGIN`. At the snapshot it had no positions and no ordinary or conditional orders, with 121.50290183 USDT free. That does not make the account dedicated. Other bots' keys were not compared with this UID, and an empty book can change later.
+The owner accepted a software 100 USDT budget on UID `211344229` and does not require physical segregation. XAUT PA and mm-shadow@bybit were disabled and masked at 22:49:47 MYT (inactive, PID 0). A 22:50:24 MYT read showed that UID flat, pagination complete, free USDT 121.50290183, borrow 0. Those facts do not reserve 100 USDT and do not make the account exclusive.
+
+`accept_shared_master_uid: true` records that acceptance. It is not a certificate that no other key can trade this UID. Foreign positions and orders still block new entries and are not cancelled. Copy `config/crypto_xs_live.accepted-budget.json` to `/etc/super-trader/crypto_xs_live.json`. Put `SUPER_TRADER_LIVE=1` and the credential file paths, not the secrets, in `/etc/super-trader/crypto-xs.env`. Do not set `SUPER_TRADER_OFFLINE_FIXTURE` there; that variable is only for the process test and never reaches Bybit.
+
+## Supported process
+
+The pt host has `python3` and does not have `/usr/bin/python`. The unit therefore starts `/opt/super-trader/.venv/bin/python`, created from `python3`:
+
+```sh
+sudo mkdir -p /opt/super-trader
+sudo rsync -a ./ /opt/super-trader/
+sudo sh deploy/install-supervisor-venv.sh /opt/super-trader
+test -x /opt/super-trader/.venv/bin/python
+/opt/super-trader/.venv/bin/python -m super_trader crypto-xs-live --config /etc/super-trader/crypto_xs_live.json --preflight
+```
+
+`deploy/crypto-xs-supervisor.service` is the start and stop path. Its `ExecStart` is that venv interpreter. Do not point it at `/usr/bin/python`. Do not enable the old refused one-shot unit; that unit cannot supervise.
+
+```sh
+sudo systemctl enable --now crypto-xs-supervisor.service
+sudo systemctl stop crypto-xs-supervisor.service
+```
+
+Exit 2 means the three opt-in switches are absent or the ledger lock is held. systemd does not restart exit 2. Exit 1 means three account reads or cycle errors in a row; the process has stopped opening. Exit 0 is a clean SIGTERM.
+
+The loop waits 60 seconds between passes. Timestamps are UTC. A Bybit linear daily bar opens at 00:00 UTC and is usable only after the next 00:00 UTC; the forming bar is dropped. `--supervise` submits a basket only for a new closed bar. Between bars it only checks this strategy's own PnL. A loss of 20 USDT cancels this strategy's orders, reduce-only closes only its quantity, and the halt stays in the ledger across restarts. `--monitor` remains a single stale pass and does not force a daily order.
+
+## Remaining order gate
+
+The book is AVAXUSDT, SUIUSDT, and BCHUSDT. At 23:38:31 MYT `set-leverage` returned `retCode 0` for those three with buy and sell leverage 2. The single-encoded cursor read (`%2C`, not `%252C`) still returned two rows for position index 0 on each symbol: a `Normal` row at leverage 2, then a row at leverage 10 with empty status, times, and mark. Replacing LINK did not remove the conflict. Cursors were `AVAXUSDT%2C1794065910940%2C0`, `SUIUSDT%2C1794065910962%2C0`, and `BCHUSDT%2C1794065910982%2C0`. New entries stay off. 1, 10, 2.001, or two disagreeing rows do not pass. This program will not resend leverage, will not drop the empty row, and will not turn exchange leverage 2 into 200 USDT of gross exposure.
+
+A later full pagination of LINKUSDT contained two rows for position index 0: one `Normal` row with leverage 1 and timestamps, and one later page with leverage 10 and empty status, times, and mark. Bybit documents one slot per `positionIdx` and does not define which duplicate wins. The adapter does not drop either row and does not let the last page replace the first. Unequal leverage on that slot leaves the symbol unknown, so the 1x gate stays closed. AVAX and SUI were not changed and remain 10x.
+
+The 23:13:17 MYT capture shows why those two rows are not yet a settled conflict. Page 1 returned `nextPageCursor=LINKUSDT%2C1794063867198%2C0`. Page 2 was sent as `cursor=LINKUSDT%252C1794063867198%252C0` because `urllib.parse.urlencode` encoded the `%` again. Official pybit copies that cursor into the query string without a second encoding, and the signature is over that same string. This client now does that. The `settleCoin=USDT&limit=200` call returned an empty list, which matches the documented non-zero-size filter and does not decide LINK's leverage.
+
+That single-encoded read was repeated at 23:18:22 MYT for LINK and at 23:38:31 MYT for AVAX, SUI, and BCH. Each still returned leverage 2 or 1 on the `Normal` row and leverage 10 on the empty-status row. Public docs do not choose between them. Do not repeat those cursor queries as a fix, and do not swap symbols to get around them. A Bybit support answer would need both raw pages, the exact URLs, and which field is authoritative. This repository does not send that request.
+
+## Unresolved wallet risk
+
+UID `211344229` is the same master account whose key was in the XAUT PA process. That process is stopped and its unit is masked; this file does not say the UID is exclusive. The 22:50:24 MYT book was empty, with free USDT 121.50290183 and borrow 0. A later order on this UID can still use that free balance. Super_Trader will then block new entries and will not cancel the other order.
 
 Isolated margin does not reserve 100 USDT from other strategies. The key cannot transfer or withdraw, so this program cannot move 100 USDT into a subaccount. The 100 USDT figure is only a virtual budget: orders are sized from `min(100, strategy equity, free USDT)`, never from the 121.50 wallet and never multiplied by the exchange leverage.
 
 Every cycle reads positions and orders across linear USDT, linear USDC, inverse, option, and spot, including conditional filters where the API allows them. Any foreign position or order blocks new risk. This program does not cancel or adopt it. That still loses the race if another bot uses the free balance after the check.
 
-LINKUSDT, AVAXUSDT, and SUIUSDT were at 10x leverage and one-way mode. Nothing was changed. New entries stay off until each of those symbols shows leverage 1. Setting that leverage is a separate, explicitly authorized operator step. It is not run by this repository.
+AVAXUSDT, SUIUSDT, and BCHUSDT were at 10x and one-way at 23:36 MYT. Nothing was changed. New entries stay off until each of those three shows exactly leverage 2. Setting that leverage is the authorized operator step. It is not run by this repository. LINKUSDT stays out of the book.
 
 ## Frozen universe
 
 Trade only these linear USDT perpetuals:
 
-- LINKUSDT, minimum quantity 0.1, step 0.1, minimum notional 5
 - AVAXUSDT, minimum quantity 0.1, step 0.1, minimum notional 5
 - SUIUSDT, minimum quantity 10, step 10, minimum notional 5
+- BCHUSDT, minimum quantity 0.01, step 0.01, minimum notional 5
 
 The read-only check saw 365 daily rows and a possibly incomplete current candle. The runner drops a daily bar until its UTC close time has passed.
 
@@ -26,16 +65,16 @@ Forbidden underlyings, taken from the existing bot configs and kept even if a co
 
 The basket is one long and one short. Gross notional cannot exceed the virtual budget. If quantity steps cannot form that pair without crossing the cap or leaving more than 10 USDT of imbalance, the cycle sends nothing.
 
-## Symbol-only 1x leverage, not a global change
+## Symbol-only 2x leverage, not a global change
 
-Do not run this from the cloud agent. Do not call account-mode, margin-mode, or leverage endpoints from `crypto-xs-live`. After a separate authorization, an operator can set only these three symbols, one call each:
+Do not run this from the cloud agent. Do not call account-mode, margin-mode, or leverage endpoints from `crypto-xs-live`. The owner authorized exchange leverage 2 on the book only. Gross notional stays at most 100 USDT. An operator can set only these three symbols, one call each:
 
 ```json
 POST /v5/position/set-leverage
-{"category":"linear","symbol":"LINKUSDT","buyLeverage":"1","sellLeverage":"1"}
+{"category":"linear","symbol":"AVAXUSDT","buyLeverage":"2","sellLeverage":"2"}
 ```
 
-Repeat with `AVAXUSDT` and `SUIUSDT`. There is no account-wide leverage switch here. Re-read the positions afterward and confirm `leverage` is `1` and `positionIdx` is `0` before enabling entries. This code rejects `/v5/position/set-leverage`, `/v5/order/cancel-all`, and transfer paths if something tries to call them.
+Repeat with `SUIUSDT` and `BCHUSDT`. There is no account-wide leverage switch. Re-read each symbol with the single-encoded cursor until `nextPageCursor` is empty. Every row for `positionIdx` 0 must agree on leverage `2`. This code rejects `/v5/position/set-leverage`, `/v5/order/cancel-all`, and transfer paths if something tries to call them.
 
 ## Loss, ownership, and collateral
 
@@ -43,7 +82,7 @@ Strategy PnL is realized fills, fees, funding attributed to symbols this strateg
 
 `orderLinkId` starts with `cxls`. The intent is written to `data/crypto_xs_live/ledger.json` before the request. A timeout keeps that id and does not invent another one.
 
-Free collateral uses `walletBalance - totalPositionIM - totalOrderIM - locked - bonus`. A blank field is unknown, not zero. Required margin is treated as 1x notional even if the exchange is set to 10x. Borrowed USDT blocks new entries.
+Free collateral uses `walletBalance - totalPositionIM - totalOrderIM - locked - bonus`. A blank field is unknown, not zero. Order notional is capped by the 100 USDT budget and is not multiplied by the exchange leverage of 2. Borrowed USDT blocks new entries.
 
 ## Commands
 

@@ -4,7 +4,7 @@
   "allocation_usdt": 100,
   "loss_cutoff_usdt": 20,
   "accept_shared_master_uid": false,
-  "symbols": ["LINKUSDT", "AVAXUSDT", "SUIUSDT"],
+  "symbols": ["AVAXUSDT", "SUIUSDT", "BCHUSDT"],
   "lookback": 20,
   "min_history": 60,
   "min_median_turnover_usdt": 1000000,

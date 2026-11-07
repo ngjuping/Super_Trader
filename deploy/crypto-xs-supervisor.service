@@ -1,0 +1,18 @@
+[Unit]
+Description=Super Trader supervisor: 100 USDT software budget, not an exclusive account
+After=network-online.target
+Documentation=file://docs/LIVE_DEPLOY.md
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/super-trader
+EnvironmentFile=/etc/super-trader/crypto-xs.env
+ExecStart=/opt/super-trader/.venv/bin/python -m super_trader crypto-xs-live --config /etc/super-trader/crypto_xs_live.json --supervise
+Restart=on-failure
+RestartSec=30
+RestartPreventExitStatus=2
+TimeoutStopSec=20
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

@@ -90,6 +90,125 @@ def test_unfinished_pagination_fails_closed_instead_of_looking_empty():
         client.fetch_protection()
 
 
+LINK_LEVERAGE_PAGES = [
+    {"symbol": "LINKUSDT", "positionIdx": 0, "side": "", "size": "0", "leverage": "1",
+     "positionStatus": "Normal", "createdTime": "1794063867198", "updatedTime": "1794063867198",
+     "seq": -1, "markPrice": "10.87", "avgPrice": "0"},
+    {"symbol": "LINKUSDT", "positionIdx": 0, "side": "", "size": "0", "leverage": "10",
+     "positionStatus": "", "createdTime": "", "updatedTime": "", "seq": -1,
+     "markPrice": "", "avgPrice": ""},
+]
+
+
+def test_duplicate_position_slot_with_different_leverage_is_not_chosen():
+    from super_trader.bybit_private import fold_position_rows
+    from super_trader.crypto_live import leverage_is_one
+
+    forward, modes = fold_position_rows(LINK_LEVERAGE_PAGES)
+    backward, _modes = fold_position_rows(list(reversed(LINK_LEVERAGE_PAGES)))
+    assert "LINKUSDT" not in forward and "LINKUSDT" not in backward
+    assert modes["LINKUSDT"] == 0
+
+    class Snap:
+        leverage_by_symbol = forward
+        position_mode_by_symbol = modes
+
+    assert leverage_is_one(Snap(), ("LINKUSDT",)) is False
+
+
+def test_post_2x_pages_for_avax_sui_bch_stay_unknown():
+    """23:38:31 MYT：set-leverage retCode 0 之后，正确单次编码的第二页仍是 10。"""
+    rows = []
+    for symbol, stamp in (
+        ("AVAXUSDT", "1794065910940"),
+        ("SUIUSDT", "1794065910962"),
+        ("BCHUSDT", "1794065910982"),
+    ):
+        rows.append({
+            "symbol": symbol, "positionIdx": 0, "size": "0", "side": "",
+            "leverage": "2", "positionStatus": "Normal",
+            "createdTime": stamp, "updatedTime": stamp, "markPrice": "1",
+        })
+        rows.append({
+            "symbol": symbol, "positionIdx": 0, "size": "0", "side": "",
+            "leverage": "10", "positionStatus": "",
+            "createdTime": "", "updatedTime": "", "markPrice": "",
+        })
+    from super_trader.bybit_private import fold_position_rows
+    from super_trader.crypto_live import FROZEN_UNIVERSE, leverage_matches
+
+    leverage, modes = fold_position_rows(rows)
+    assert leverage == {}
+    assert modes == {symbol: 0 for symbol in ("AVAXUSDT", "SUIUSDT", "BCHUSDT")}
+
+    class Snap:
+        leverage_by_symbol = leverage
+        position_mode_by_symbol = modes
+
+    assert leverage_matches(Snap(), FROZEN_UNIVERSE, 2.0) is False
+
+
+def test_agreeing_duplicate_rows_keep_the_shared_leverage():
+    from super_trader.bybit_private import fold_position_rows
+
+    rows = [dict(LINK_LEVERAGE_PAGES[0]), dict(LINK_LEVERAGE_PAGES[1], leverage="1")]
+    leverage, modes = fold_position_rows(rows)
+    assert leverage["LINKUSDT"] == 1.0
+    assert modes["LINKUSDT"] == 0
+
+
+def test_cursor_is_not_encoded_twice():
+    seen = []
+
+    def transport(method, url, headers, body):
+        seen.append(url)
+        if len(seen) == 1:
+            payload = {"retCode": 0, "result": {
+                "list": LINK_LEVERAGE_PAGES[:1],
+                "nextPageCursor": "LINKUSDT%2C1794063867198%2C0",
+            }}
+        else:
+            payload = {"retCode": 0, "result": {"list": [], "nextPageCursor": ""}}
+        return 200, json.dumps(payload).encode()
+
+    client = _client(transport)
+    client._pages("/v5/position/list", {"category": "linear", "symbol": "LINKUSDT"})
+    assert len(seen) == 2
+    assert "cursor=LINKUSDT%2C1794063867198%2C0" in seen[1]
+    assert "%252C" not in seen[1]
+
+
+def test_paginated_position_rows_are_all_folded():
+    pages = {
+        None: (LINK_LEVERAGE_PAGES[:1], "page-2"),
+        "page-2": (LINK_LEVERAGE_PAGES[1:], ""),
+    }
+
+    def transport(method, url, headers, body):
+        if "/v5/user/query-api" in url:
+            payload = {"retCode": 0, "result": {"permissions": {
+                "ContractTrade": ["Order", "Position"], "Wallet": [],
+            }}}
+            return 200, json.dumps(payload).encode()
+        if "/v5/account/wallet-balance" in url:
+            payload = {"retCode": 0, "result": {"list": [{"coin": [{
+                "coin": "USDT", "walletBalance": "121.50290183", "totalPositionIM": "0",
+                "totalOrderIM": "0", "locked": "0", "bonus": "0", "borrowAmount": "0",
+            }]}]}}
+            return 200, json.dumps(payload).encode()
+        if "/v5/position/list" in url:
+            cursor = "page-2" if "cursor=page-2" in url else None
+            rows, next_cursor = pages[cursor]
+            payload = {"retCode": 0, "result": {"list": rows, "nextPageCursor": next_cursor}}
+            return 200, json.dumps(payload).encode()
+        return 200, b'{"retCode":0,"result":{"list":[]}}'
+
+    client = _client(transport)
+    snapshot = client.fetch_protection()
+    assert snapshot.pages_complete is True
+    assert "LINKUSDT" not in snapshot.leverage_by_symbol
+
+
 def test_instrument_rows_parse_the_checked_filters():
     row = {
         "symbol": "SUIUSDT", "status": "Trading", "contractType": "LinearPerpetual",

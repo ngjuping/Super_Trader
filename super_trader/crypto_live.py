@@ -1,8 +1,8 @@
 """Bybit 线性合约横截面实盘执行。默认不开仓。
 
 预算是独立的 100 USDT 虚拟额度，不是钱包里的全部 USDT。
-交易所杠杆不参与放大。观察到的合约杠杆不是 1 时，只允许减自己的仓。
-冻结宇宙只有 LINKUSDT、AVAXUSDT、SUIUSDT。其他机器人用过的标的一律拒绝。
+交易所杠杆必须正好是 2，名义敞口不按 2 倍放大。不是正好 2 时，只允许减自己的仓。
+冻结宇宙只有 AVAXUSDT、SUIUSDT、BCHUSDT。交易所杠杆必须正好是 2，名义总敞口仍不超过 100 USDT。
 """
 from __future__ import annotations
 
@@ -21,7 +21,8 @@ LOSS_CUTOFF_USDT = 20.0
 MAX_UNHEDGED_USDT = 20.0
 MAX_NEUTRAL_IMBALANCE_USDT = 10.0
 ORDER_PREFIX = "cxls"
-FROZEN_UNIVERSE = ("LINKUSDT", "AVAXUSDT", "SUIUSDT")
+FROZEN_UNIVERSE = ("AVAXUSDT", "SUIUSDT", "BCHUSDT")
+TARGET_EXCHANGE_LEVERAGE = 2.0
 FORBIDDEN_UNDERLYINGS = frozenset({
     "ADA", "BTC", "DOGE", "ETH", "SOL", "XAUT", "XOM", "XRP",
 })
@@ -41,7 +42,7 @@ READINESS_WARNINGS = (
     "UID 211344229 是主账户。2026-11-07 22:10 MYT 的空仓空挂单只是快照，不能证明以后没有别的机器人使用同一 UID。",
     "逐仓模式不会在机器人之间预留 100 USDT。没有划转权限，也不能把 100 USDT 挪到独立子账户。",
     "软件里的 100 USDT 只是虚拟预算。别的机器人仍可能占用同一 UID 的可用余额。",
-    "三个候选合约当时的交易所杠杆是 10 倍。本程序不会修改杠杆。杠杆不是 1 时不开新仓。",
+    "三个候选合约在 23:36 MYT 的完整分页仍是 10 倍。本程序不会修改杠杆。杠杆不是正好 2 时不开新仓。",
     "亏损 20 USDT 会撤销自己的委托并只平自己的数量，然后停机。这不是成交价意义上的亏损封顶。",
     "公开行情和账户只读事实来自批准的部署机，不是本构建环境。部署前需要再做一次只读核验。",
 )
@@ -212,7 +213,7 @@ class LiveConfig:
 
     def __post_init__(self) -> None:
         if tuple(self.symbols) != FROZEN_UNIVERSE:
-            raise ValueError("实盘宇宙已冻结为 LINKUSDT、AVAXUSDT、SUIUSDT，不能增删")
+            raise ValueError("实盘宇宙已冻结为 AVAXUSDT、SUIUSDT、BCHUSDT，不能增删")
         if any(is_forbidden_symbol(symbol) for symbol in self.symbols):
             raise ValueError("冻结宇宙和禁投标的重叠")
         if self.lookback < 1 or self.min_history < 2 or self.liquidity_window < 1:
@@ -274,8 +275,8 @@ def readiness(cfg: LiveConfig, snapshot: ProtectionSnapshot | None = None) -> di
             hard.append("持仓或委托分页没有查完")
         if snapshot.free_usdt is None:
             hard.append("逐仓可用余额无法按公式计算，不能把空字段当成 0")
-        if not leverage_is_one(snapshot, cfg.symbols):
-            hard.append("候选合约杠杆不是 1 倍。本程序不会去改它")
+        if not leverage_matches(snapshot, cfg.symbols, TARGET_EXCHANGE_LEVERAGE):
+            hard.append("候选合约杠杆不是正好 2 倍。本程序不会去改它，也不会把名义敞口放大到 200")
         if snapshot.borrow_usdt > 0:
             hard.append("账户有借币，不能拿来当策略本金")
     return {
@@ -292,20 +293,26 @@ def readiness(cfg: LiveConfig, snapshot: ProtectionSnapshot | None = None) -> di
     }
 
 
-def leverage_is_one(snapshot: ProtectionSnapshot, symbols: tuple[str, ...]) -> bool:
+def leverage_matches(snapshot: ProtectionSnapshot, symbols: tuple[str, ...], target: float) -> bool:
+    """必须每个合约的完整分页杠杆都正好等于目标，差 0.001 也不接受。"""
     for symbol in symbols:
         value = snapshot.leverage_by_symbol.get(symbol)
         mode = snapshot.position_mode_by_symbol.get(symbol)
-        if value is None or abs(value - 1.0) > 1e-9:
+        if value is None or abs(value - float(target)) > 1e-9:
             return False
         if mode not in (0, None):
             return False
     return True
 
 
+def leverage_is_one(snapshot: ProtectionSnapshot, symbols: tuple[str, ...]) -> bool:
+    """旧的正好 1 倍判断，只留给回归。当前开仓目标不是 1。"""
+    return leverage_matches(snapshot, symbols, 1.0)
+
+
 def opening_budget(strategy_equity: float, free_usdt: float | None, exchange_leverage: float) -> float:
-    """1 倍名义预算。交易所杠杆只用来决定是否允许开仓，绝不拿来乘数量。"""
-    if abs(exchange_leverage - 1.0) > 1e-9 or free_usdt is None:
+    """名义预算最多 100 USDT。交易所杠杆 2 只是门禁，不拿来乘数量。"""
+    if abs(exchange_leverage - TARGET_EXCHANGE_LEVERAGE) > 1e-9 or free_usdt is None:
         return 0.0
     if strategy_equity <= 0 or free_usdt <= 0:
         return 0.0
@@ -685,8 +692,8 @@ def run_cycle(cfg: LiveConfig, ledger: Ledger, broker, market, now_ms: int) -> d
         return result
     _reduce_if_needed(cfg, ledger, snapshot, broker, result, blocked, signal_ms, foreign)
     blockers = []
-    if not leverage_is_one(snapshot, cfg.symbols):
-        blockers.append("symbol leverage is not 1x")
+    if not leverage_matches(snapshot, cfg.symbols, TARGET_EXCHANGE_LEVERAGE):
+        blockers.append("symbol leverage is not 2x")
     if foreign:
         blockers.append("foreign position or order on the shared account")
     if snapshot.free_usdt is None:
@@ -706,7 +713,7 @@ def run_cycle(cfg: LiveConfig, ledger: Ledger, broker, market, now_ms: int) -> d
         ledger.save()
         return result
     equity = ledger.equity(snapshot.marks)
-    observed = snapshot.leverage_by_symbol.get(cfg.symbols[0], 1.0)
+    observed = snapshot.leverage_by_symbol.get(cfg.symbols[0], TARGET_EXCHANGE_LEVERAGE)
     result["budget"] = opening_budget(equity or 0.0, snapshot.free_usdt, observed)
     if market.close is None or not _rebalance_due(ledger, market.last_open_ms, cfg.policy.rebalance_every):
         result["action"] = "monitored"
@@ -799,11 +806,11 @@ def _reduce_if_needed(cfg, ledger, snapshot, broker, result, blocked, signal_ms,
 def snapshot_instruments() -> dict[str, Instrument]:
     """2026-11-07 22:10 MYT 只读核验里这三个合约的过滤器。运行时仍要重新读取。"""
     return {
-        "LINKUSDT": Instrument("LINKUSDT", 0.1, 0.1, 5.0),
         "AVAXUSDT": Instrument("AVAXUSDT", 0.1, 0.1, 5.0),
         "SUIUSDT": Instrument("SUIUSDT", 10.0, 10.0, 5.0),
+        "BCHUSDT": Instrument("BCHUSDT", 0.01, 0.01, 5.0),
     }
 
 
 def snapshot_marks() -> dict[str, float]:
-    return {"LINKUSDT": 10.894, "AVAXUSDT": 8.271, "SUIUSDT": 0.8624}
+    return {"AVAXUSDT": 8.214, "SUIUSDT": 0.85670, "BCHUSDT": 257.68}
