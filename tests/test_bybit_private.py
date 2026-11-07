@@ -125,6 +125,27 @@ def test_agreeing_duplicate_rows_keep_the_shared_leverage():
     assert modes["LINKUSDT"] == 0
 
 
+def test_cursor_is_not_encoded_twice():
+    seen = []
+
+    def transport(method, url, headers, body):
+        seen.append(url)
+        if len(seen) == 1:
+            payload = {"retCode": 0, "result": {
+                "list": LINK_LEVERAGE_PAGES[:1],
+                "nextPageCursor": "LINKUSDT%2C1794063867198%2C0",
+            }}
+        else:
+            payload = {"retCode": 0, "result": {"list": [], "nextPageCursor": ""}}
+        return 200, json.dumps(payload).encode()
+
+    client = _client(transport)
+    client._pages("/v5/position/list", {"category": "linear", "symbol": "LINKUSDT"})
+    assert len(seen) == 2
+    assert "cursor=LINKUSDT%2C1794063867198%2C0" in seen[1]
+    assert "%252C" not in seen[1]
+
+
 def test_paginated_position_rows_are_all_folded():
     pages = {
         None: (LINK_LEVERAGE_PAGES[:1], "page-2"),

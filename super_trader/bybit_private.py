@@ -69,6 +69,21 @@ def redact(text: str, secrets: tuple[str, ...]) -> str:
     return out
 
 
+def build_get_query(params: dict) -> str:
+    """拼 GET 查询。cursor 按官方 pybit 原样拼进 URL，不再把 % 编成 %25。"""
+    parts = []
+    for key in sorted(params):
+        value = params[key]
+        if value is None:
+            continue
+        text = str(value)
+        if key == "cursor":
+            parts.append(key + "=" + text)
+        else:
+            parts.append(urllib.parse.urlencode({key: text}))
+    return "&".join(parts)
+
+
 def sign_v5(secret: str, timestamp: str, api_key: str, recv_window: str, payload: str) -> str:
     message = f"{timestamp}{api_key}{recv_window}{payload}"
     return hmac.new(secret.encode(), message.encode(), hashlib.sha256).hexdigest()
@@ -112,7 +127,7 @@ class BybitPrivateClient:
         if (method, path) not in ALLOWED:
             raise PrivatePathError(f"拒绝私有路径 {method} {path}")
         params = {key: value for key, value in (params or {}).items() if value is not None}
-        query = urllib.parse.urlencode(sorted(params.items()))
+        query = build_get_query(params)
         payload = json.dumps(body, separators=(",", ":")) if body is not None else query
         timestamp = str(int(self.clock()))
         signature = sign_v5(

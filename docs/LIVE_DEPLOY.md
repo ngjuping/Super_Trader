@@ -37,12 +37,16 @@ LINKUSDT, AVAXUSDT, and SUIUSDT were last read at 10x. This program still refuse
 
 A later full pagination of LINKUSDT contained two rows for position index 0: one `Normal` row with leverage 1 and timestamps, and one later page with leverage 10 and empty status, times, and mark. Bybit documents one slot per `positionIdx` and does not define which duplicate wins. The adapter does not drop either row and does not let the last page replace the first. Unequal leverage on that slot leaves the symbol unknown, so the 1x gate stays closed. AVAX and SUI were not changed and remain 10x.
 
-The saved pages do not include the request query. Official `/v5/position/list` says a `settleCoin` query without `symbol` returns only size greater than zero, but both captured rows have size 0. Before treating pagination as settled, a read-only capture still needs both of these, including every `nextPageCursor`:
+The 23:13:17 MYT capture shows why those two rows are not yet a settled conflict. Page 1 returned `nextPageCursor=LINKUSDT%2C1794063867198%2C0`. Page 2 was sent as `cursor=LINKUSDT%252C1794063867198%252C0` because `urllib.parse.urlencode` encoded the `%` again. Official pybit copies that cursor into the query string without a second encoding, and the signature is over that same string. This client now does that. The `settleCoin=USDT&limit=200` call returned an empty list, which matches the documented non-zero-size filter and does not decide LINK's leverage.
+
+Repeat this read-only pair. The second URL must contain `%2C`, not `%252C`:
 
 ```text
 GET /v5/position/list?category=linear&symbol=LINKUSDT
-GET /v5/position/list?category=linear&settleCoin=USDT&limit=200
+GET /v5/position/list?category=linear&cursor=LINKUSDT%2C1794063867198%2C0&symbol=LINKUSDT
 ```
+
+If that full result still has two different leverages for position index 0, the 1x gate stays closed. This package does not drop either of the already captured rows to force a pass.
 
 ## Unresolved wallet risk
 
