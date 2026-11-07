@@ -172,6 +172,129 @@ def cmd_ranking(args) -> int:
     return 0
 
 
+def cmd_crypto_xs(args) -> int:
+    """加密货币横截面纸面路径。--live 只打印关闭原因，不会连接私有交易接口。"""
+    import json
+
+    from .bybit_public import BybitPublicError, fetch_klines, fetch_launch_ms, frames_from_payload
+    from .crypto_xs import (
+        CryptoXSConfig, PaperLimits, Policy, live_block_reason, prepare_panels,
+        research_config, run_crypto_xs,
+    )
+
+    if args.live:
+        print(live_block_reason({
+            "universe": args.confirm_universe,
+            "category": args.confirm_category,
+            "funding": args.confirm_funding,
+            "leverage": args.confirm_leverage,
+            "loss_limit": args.confirm_loss_limit,
+        }))
+        return 2
+
+    pinned_flags = [args.lookback, args.horizon, args.top_k, args.direction]
+    if any(flag is not None for flag in pinned_flags) and not all(flag is not None for flag in pinned_flags):
+        print("固定规则时，--lookback、--horizon、--top-k、--direction 必须同时给出", file=sys.stderr)
+        return 2
+    symbols = tuple(part.strip().upper() for part in args.symbols.split(",") if part.strip()) if args.symbols else None
+    try:
+        cfg = research_config(args.category, symbols)
+        limits = PaperLimits(
+            max_name_weight=args.max_name_weight,
+            max_gross=args.max_gross,
+            max_net=args.max_net,
+        )
+        cfg = CryptoXSConfig(
+            category=cfg.category,
+            symbols=cfg.symbols,
+            paper_equity_usdt=args.paper_equity,
+            fee_bps=args.fee_bps,
+            slippage_bps=args.slippage_bps,
+            min_history=args.min_history,
+            min_names=args.min_names,
+            min_median_turnover=args.min_turnover,
+            liquidity_window=args.liquidity_window,
+            lookbacks=tuple(args.lookbacks) if args.lookbacks else cfg.lookbacks,
+            horizons=tuple(args.horizons) if args.horizons else cfg.horizons,
+            top_ks=tuple(args.top_ks) if args.top_ks else cfg.top_ks,
+            holding_bars=args.rebalance_every,
+            limits=limits,
+            universe_source=cfg.universe_source,
+        )
+    except (TypeError, ValueError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    as_of_ms = int(args.as_of_ms) if args.as_of_ms is not None else int(datetime.now().timestamp() * 1000)
+    try:
+        if args.bars_json:
+            payload = json.loads(Path(args.bars_json).read_text(encoding="utf-8"))
+            if args.as_of_ms is None and payload.get("as_of_ms") is not None:
+                as_of_ms = int(payload["as_of_ms"])
+            frames = frames_from_payload(payload)
+        else:
+            from .bybit_public import default_getter
+            getter = default_getter()
+            frames = {}
+            for symbol in cfg.symbols:
+                launch = fetch_launch_ms(cfg.category, symbol, getter)
+                bars = fetch_klines(cfg.category, symbol, as_of_ms=as_of_ms, getter=getter)
+                from .bybit_public import bars_to_frame
+                frames[symbol] = bars_to_frame(bars, launch_ms=launch)
+        present = {
+            symbol: frame for symbol, frame in frames.items()
+            if symbol in cfg.symbols and len(frame)
+        }
+        missing = [symbol for symbol in cfg.symbols if symbol not in present]
+        if missing:
+            print("以下交易对没有已收盘 K 线: " + ", ".join(missing), file=sys.stderr)
+            return 2
+        open_, close, turnover = prepare_panels(present)
+        pinned = None
+        if args.direction is not None:
+            pinned = Policy(
+                args.lookback, args.horizon, args.top_k, args.direction,
+                rebalance_every=args.rebalance_every or args.horizon,
+            )
+        report = run_crypto_xs(open_, close, turnover, cfg, as_of_ms=as_of_ms, pinned=pinned)
+    except (BybitPublicError, ValueError, RuntimeError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    out = Path(args.report) if args.report else Path("reports") / "crypto_xs" / f"{cfg.category}_paper.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    policy = report["policy"]
+    print("加密货币横截面纸面结果（未下单）")
+    print(f"  category: {cfg.category}    做空: {'允许' if report['allows_short'] else '不允许，现货只做多和现金'}")
+    print(f"  宇宙来源: {cfg.universe_source}    交易对: {', '.join(cfg.symbols)}")
+    print(f"  {report['survivorship']}")
+    print(f"  {report['a_share_accuracy']}")
+    if policy is None:
+        print("  规则: 拟合/校准没有选出可执行的横截面规则，保持空仓")
+    else:
+        print(
+            f"  规则: {policy['direction']} lookback={policy['lookback']} "
+            f"hold={policy['rebalance_every']} top_k={policy['top_k']} "
+            f"选择方式={report['selection']['mode']}"
+        )
+    test = report["test_simulation"]
+    if test:
+        ending = test["ending_equity"]
+        ending_text = "无法盯市" if ending is None else f"{ending:.4f}"
+        print(
+            f"  测试段纸面记账: 再平衡 {test['rebalances']} 次, "
+            f"费用 {test['fees']:.4f}, 成交额 {test['traded_notional']:.4f}, "
+            f"换手 {test['turnover']:.4f}, 期末权益 {ending_text}"
+        )
+        print(f"  {test['note']}")
+    latest = report["latest"]
+    print(f"  最新已收盘目标: {latest['reason']}  权重 {latest['target_weights'] or '无'}")
+    print(f"  {report['live_block_reason']}")
+    print(f"  报告: {out}")
+    return 0
+
+
 def cmd_placebo(args) -> int:
     from .diagnose import placebo_test
 
@@ -257,6 +380,44 @@ def build_parser() -> argparse.ArgumentParser:
     ff.add_argument("--max-rules", type=int, default=5)
     ff.add_argument("--workers", type=int, default=1, help="并行进程数（全市场建议 8）")
     ff.set_defaults(func=cmd_fullfit)
+
+    cx = sub.add_parser(
+        "crypto-xs",
+        help="Bybit 加密货币横截面纸面交易（公开日线，不下单）",
+    )
+    cx.add_argument("--category", required=True, choices=["spot", "linear", "inverse"],
+                    help="必须写明。spot 只做多；linear/inverse 才允许多空")
+    cx.add_argument("--symbols", default=None,
+                    help="逗号分隔的交易对。不写时，spot/linear 使用研究默认宇宙；inverse 必须写")
+    cx.add_argument("--bars-json", default=None, help="本地已收盘 K 线 JSON，用于离线纸面，不访问交易所")
+    cx.add_argument("--as-of-ms", type=int, default=None, help="判定收盘和过期的 UTC 毫秒时间")
+    cx.add_argument("--paper-equity", type=float, default=10_000.0,
+                    help="纸面记账权益（USDT）。不是实盘资金")
+    cx.add_argument("--fee-bps", type=float, default=10.0, help="研究用费率假设，不是账户实际费率")
+    cx.add_argument("--slippage-bps", type=float, default=5.0, help="研究用滑点假设")
+    cx.add_argument("--min-history", type=int, default=60)
+    cx.add_argument("--min-names", type=int, default=6)
+    cx.add_argument("--min-turnover", type=float, default=1_000_000.0, help="过去窗口成交额中位数下限，USDT")
+    cx.add_argument("--liquidity-window", type=int, default=20)
+    cx.add_argument("--lookbacks", type=int, nargs="+", default=None)
+    cx.add_argument("--horizons", type=int, nargs="+", default=None)
+    cx.add_argument("--top-ks", type=int, nargs="+", default=None)
+    cx.add_argument("--lookback", type=int, default=None, help="与 horizon/top-k/direction 一起固定规则")
+    cx.add_argument("--horizon", type=int, default=None)
+    cx.add_argument("--top-k", type=int, default=None)
+    cx.add_argument("--direction", choices=["momentum", "reversal"], default=None)
+    cx.add_argument("--rebalance-every", type=int, default=None, help="持有几根日线后再平衡，默认等于 horizon")
+    cx.add_argument("--max-name-weight", type=float, default=0.5)
+    cx.add_argument("--max-gross", type=float, default=1.0, help="纸面总敞口上限，1 表示不加杠杆")
+    cx.add_argument("--max-net", type=float, default=1.0)
+    cx.add_argument("--report", default=None, help="纸面报告 JSON 路径")
+    cx.add_argument("--live", action="store_true", help="请求实盘。当前构建会拒绝并退出")
+    cx.add_argument("--confirm-universe", action="store_true")
+    cx.add_argument("--confirm-category", action="store_true")
+    cx.add_argument("--confirm-funding", action="store_true")
+    cx.add_argument("--confirm-leverage", action="store_true")
+    cx.add_argument("--confirm-loss-limit", action="store_true")
+    cx.set_defaults(func=cmd_crypto_xs)
 
     return p
 

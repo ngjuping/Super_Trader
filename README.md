@@ -119,6 +119,12 @@ H1/H3/H5/H10/H20指日线持有期，不指日线/60分钟等K线频率。
 口径说明：价格面板不是严格平衡的（停牌、退市、新股），分位价差等权、未扣成本，
 高换手横截面策略对成本极其敏感。
 
+## 加密货币横截面（Bybit 公开行情，纸面）
+
+`python -m super_trader crypto-xs` 把上面的横截面问题搬到 24 小时 UTC 日线：同一时刻给多个交易对排名，再做纸面组合。它不是 BTC 单币择时，也不使用 A 股涨跌停或中国交易日历。
+
+产品类别必须写明。`spot` 只做多，剩余是现金，不借券；`linear` / `inverse` 才允许多空。研究默认的交易对、一万 USDT 纸面权益、费用和滑点都写在 `docs/CRYPTO_XS.md`，它们不是已经批准的实盘资金或杠杆。`--live` 会拒绝，本程序没有私有下单通道。仓库里 A 股 50.38% 的方向准确率不适用于这条路径。
+
 ## 快速开始
 
 ```powershell
@@ -147,7 +153,8 @@ python -m super_trader rules             # 列出 78 条规则
 python -m super_trader personalize       # 个性化规则：每标的各选各的（4 段复现）
 python -m super_trader placebo           # 安慰剂检验（打乱标签后还剩多少「规律」）
 python -m super_trader report            # 用已有 results.json 重新生成报告
-python -m pytest -q                      # 82 项单元测试
+python -m super_trader crypto-xs --help  # Bybit 加密货币横截面纸面交易
+python -m pytest -q                      # 单元测试
 ```
 
 扫描全市场（8,228 个标的）时用 `--pool auto --top 200`；只跑指数用 `--pool 宽基`。
