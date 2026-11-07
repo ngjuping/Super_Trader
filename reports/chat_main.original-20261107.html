@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Super Trader · AI 交易工作台</title>
+<style>
+  :root{
+    --bg:#0b0f17; --panel:#141b2b; --panel2:#1a2234; --side:#0e1420;
+    --line:#26304a; --txt:#e3e9f5; --mut:#8a95ad; --dim:#5a6378;
+    --up:#ff5b5b; --down:#19c37d; --warn:#ffb020; --acc:#4a8cff; --acc2:#9a6bff;
+    --chip:#223049; --bubble:#1c2740;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);
+    font:14px/1.6 "Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+  a{color:var(--acc);text-decoration:none}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#273149;border-radius:6px}
+
+  .app{display:grid;grid-template-columns:248px 1fr;height:100vh}
+
+  /* ============ LEFT NAV ============ */
+  .left{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .brand{padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+  .brand .logo{font-weight:800;font-size:17px}
+  .brand .logo b{color:var(--acc)}
+  .brand .sub{font-size:10px;color:var(--dim);margin-top:2px}
+
+  .navscroll{flex:1;overflow-y:auto;padding:8px 0}
+  .lgrp{padding:14px 16px 6px;font-size:10px;letter-spacing:1px;color:var(--dim);text-transform:uppercase}
+  .nav{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--mut);
+    border-left:3px solid transparent;font-size:13px}
+  .nav:hover{background:#121a28;color:var(--txt)}
+  .nav.active{background:#121a28;color:var(--txt);border-left-color:var(--acc)}
+  .nav .ic{width:18px;text-align:center}
+  .nav .step-n{font-size:10px;color:var(--dim);margin-left:auto;background:var(--chip);border-radius:10px;padding:0 7px}
+  .nav.active .step-n{background:var(--acc);color:#fff}
+
+  .persona{border-top:1px solid var(--line);padding:12px}
+  .persona .lbl{font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:8px}
+  .pbtn{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border:1px solid var(--line);
+    background:var(--panel);border-radius:9px;color:var(--mut);cursor:pointer;margin-bottom:6px;font-size:13px}
+  .pbtn:hover{color:#fff}
+  .pbtn.active{border-color:var(--acc2);color:#fff;background:#1d1a33}
+  .pbtn .ava{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;background:var(--chip);font-size:13px}
+  .pbtn .meta{flex:1;text-align:left;line-height:1.2}
+  .pbtn .meta b{font-size:13px} .pbtn .meta span{font-size:10px;color:var(--dim);display:block}
+
+  /* ============ MAIN ============ */
+  .main{display:flex;flex-direction:column;overflow:hidden}
+  .top{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 20px;background:var(--panel)}
+  .top .ctitle{font-weight:600}
+  .top .ctitle small{color:var(--mut);font-weight:400;font-size:11px;margin-left:8px}
+  .top .model{font-size:11px;color:var(--mut);background:var(--chip);border:1px solid var(--line);padding:3px 9px;border-radius:20px}
+  .top .spacer{flex:1}
+  .stat{display:flex;flex-direction:column;line-height:1.1}
+  .stat .k{font-size:10px;color:var(--mut)} .stat .v{font-size:13px;font-weight:700}
+  .sep{width:1px;height:24px;background:var(--line)}
+
+  .viewport{flex:1;overflow-y:auto}
+  .view{display:none}
+  .view.active{display:block}
+  .pagewrap{max-width:1000px;margin:0 auto;padding:22px 26px 48px}
+  .lead{color:var(--mut);margin-bottom:16px;max-width:780px}
+  h2.ph{font-size:18px;margin-bottom:4px}
+  .flowbar{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+  .fb{flex:1;min-width:92px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:11px;color:var(--mut);cursor:pointer;text-align:center}
+  .fb:hover{border-color:var(--acc)} .fb.on{border-color:var(--acc);color:#fff;background:#121a28}
+  .fb b{display:block;color:var(--txt);font-size:12px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px}
+  .card>h3{font-size:13px;padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:var(--panel2)}
+  .card>h3 .tag{margin-left:auto;font-size:10px;color:var(--mut);font-weight:400}
+  .card .body{padding:14px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--down);box-shadow:0 0 8px var(--down)}
+  .dot.w{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+  .muted{color:var(--mut)} .small{font-size:11px}
+
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--mut);font-weight:600;font-size:11px}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .pass{color:var(--down)} .fail{color:var(--up)} .warn{color:var(--warn)}
+  .dir{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700}
+  .d-long{background:rgba(255,91,91,.15);color:var(--up)}
+  .d-short{background:rgba(25,195,125,.15);color:var(--down)}
+  .d-flat{background:#2a3450;color:var(--mut)}
+  .yes{color:var(--down)} .no{color:var(--up)}
+
+  .crit{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .cpill{background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-size:12px}
+  .cpill b{color:var(--acc)}
+  .src{font-size:10px;color:var(--dim);margin-top:10px}
+
+  /* mini bars */
+  .mb{height:7px;border-radius:5px;background:#222c42;overflow:hidden;margin-top:4px}
+  .mb i{display:block;height:100%}
+
+  /* ===== chat ===== */
+  .stream{padding:22px 0}
+  .turn{max-width:840px;margin:0 auto 22px;padding:0 26px;display:flex;gap:14px}
+  .turn .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;font-size:15px}
+  .turn.user .ic{background:var(--chip)}
+  .turn.ai .ic{background:linear-gradient(135deg,var(--acc),var(--acc2))}
+  .turn .who{font-size:11px;color:var(--mut);margin-bottom:4px}
+  .turn .content{flex:1}
+  .bubble{background:var(--bubble);border:1px solid var(--line);border-radius:12px;padding:13px 16px}
+  .turn.user .bubble{background:var(--panel2)}
+  .bubble p{margin:0 0 8px} .bubble p:last-child{margin:0}
+  .funnel{display:flex;gap:6px;margin:10px 0 14px;flex-wrap:wrap}
+  .step{flex:1;min-width:118px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 11px;position:relative;cursor:pointer}
+  .step:hover{border-color:var(--acc)}
+  .step .n{font-size:10px;color:var(--acc)} .step .s{font-size:12px;font-weight:600;margin:2px 0}
+  .step .r{font-size:10px;color:var(--mut)}
+  .step.pass{border-color:rgba(25,195,125,.4)} .step.pass .n{color:var(--down)}
+  .step .chk{position:absolute;right:9px;top:8px;color:var(--down);font-size:11px}
+  .restable td b{font-weight:700}
+  .cite{color:var(--acc);cursor:pointer;font-size:11px;border-bottom:1px dashed var(--acc)}
+  .disc{font-size:11px;color:var(--dim);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+
+  .composer{border-top:1px solid var(--line);padding:14px 26px 18px;background:var(--panel)}
+  .chips{max-width:840px;margin:0 auto 10px;display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-size:12px;color:var(--mut);background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer}
+  .chip:hover{color:#fff;border-color:var(--acc)}
+  .cbox{max-width:840px;margin:0 auto;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .cbox textarea{width:100%;background:transparent;border:none;color:var(--txt);resize:none;font:14px/1.5 inherit;outline:none;min-height:24px}
+  .cbox .toolbar{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .tool{font-size:11px;color:var(--mut);background:var(--chip);border:1px solid var(--line);border-radius:20px;padding:3px 10px;cursor:pointer}
+  .tool:hover{color:#fff}
+  .send{margin-left:auto;background:var(--acc);border:none;color:#fff;border-radius:9px;width:34px;height:34px;cursor:pointer;font-size:16px}
+
+  /* ===== selected-stock detail cards ===== */
+  .stock{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden}
+  .stock .sh{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .stock .sh .tk{font-size:18px;font-weight:800}
+  .stock .sh .nm{color:var(--mut)}
+  .stock .sh .rank{margin-left:auto;background:rgba(255,91,91,.15);color:var(--up);font-size:11px;font-weight:700;border-radius:8px;padding:4px 10px}
+  .stock .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  .stock .cell{padding:13px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .stock .cell:nth-child(4n){border-right:none}
+  .stock .cell .st-n{font-size:10px;color:var(--acc);margin-bottom:3px}
+  .stock .cell .st-v{font-size:13px;font-weight:600}
+  .stock .cell .st-d{font-size:11px;color:var(--mut);margin-top:3px}
+  .stock .verdict{padding:13px 14px;font-size:13px}
+  .stock .verdict b{color:var(--txt)}
+
+  /* ===== scalable multi-expert layout (AI page) ===== */
+  .v-yes{color:var(--up)} .v-no{color:var(--down)} .v-wait{color:var(--warn)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--mut);margin-top:12px}
+  .legend span b{color:var(--txt)}
+
+  /* expert filter chips */
+  .expfilter{display:flex;gap:8px;flex-wrap:wrap}
+  .efchip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);background:var(--panel2);
+    border:1px solid var(--line);border-radius:20px;padding:5px 11px;cursor:pointer;user-select:none}
+  .efchip:hover{color:#fff}
+  .efchip.off{opacity:.4;text-decoration:line-through}
+  .efchip.main{border-color:var(--acc2);color:#fff}
+  .efchip .ava{font-size:13px}
+
+  /* stock card with expert tiles */
+  .scard{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden}
+  .scard .sh{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .scard .sh .tk{font-size:16px;font-weight:800}
+  .scard .sh .cat{color:var(--mut);font-size:12px}
+  .scard .sh .cons{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .consbar{width:150px;height:9px;border-radius:6px;overflow:hidden;display:flex;background:#222c42}
+  .consbar i{height:100%}
+  .consbar .b-yes{background:var(--up)} .consbar .b-wait{background:var(--warn)} .consbar .b-no{background:var(--down)}
+  .conslabel{font-size:11px;color:var(--mut);white-space:nowrap}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1px;background:var(--line)}
+  .tile{background:var(--panel);padding:11px 12px}
+  .tile .th{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+  .tile .th .ava{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:var(--chip);border:1px solid var(--line);font-size:12px}
+  .tile .th b{font-size:12px;flex:1}
+  .tile .vdot{font-size:10px;font-weight:700;border-radius:5px;padding:1px 7px}
+  .tile .vdot.v-yes{background:rgba(255,91,91,.15)} .tile .vdot.v-no{background:rgba(25,195,125,.15)} .tile .vdot.v-wait{background:rgba(255,176,32,.15)}
+  .tile .vwhy{font-size:11px;color:var(--mut);line-height:1.5}
+  .tile.main{box-shadow:inset 0 0 0 1px var(--acc2)}
+  .tile.hide{display:none}
+
+  /* ===== 分析团队 page ===== */
+  #teamcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .tcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .tcard.off{opacity:.55}
+  .tcard .th{display:flex;align-items:center;gap:11px;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .tcard .th .ava{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;background:var(--chip);border:1px solid var(--line);font-size:19px}
+  .tcard .th .nm{font-size:15px;font-weight:700}
+  .tcard .th .tg{font-size:11px;color:var(--dim)}
+  .tcard .th .mainbadge{font-size:9px;font-weight:700;color:#fff;background:var(--acc2);border-radius:10px;padding:1px 7px;margin-left:6px}
+  /* toggle switch */
+  .sw{margin-left:auto;width:40px;height:22px;border-radius:12px;background:#2a3450;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
+  .sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#8a95ad;transition:all .15s}
+  .sw.on{background:rgba(25,195,125,.5)} .sw.on::after{left:20px;background:var(--down)}
+  .tcard .tb{padding:13px 14px;flex:1}
+  .tcard .desc{font-size:12px;color:var(--mut);line-height:1.6;margin-bottom:11px}
+  .tcard .sec-t{font-size:10px;color:var(--acc);letter-spacing:.5px;margin:0 0 5px}
+  .tcard .basis{list-style:none;margin:0 0 11px;padding:0}
+  .tcard .basis li{font-size:12px;padding:3px 0 3px 2px;border-bottom:1px dashed var(--line)}
+  .tcard .basis li:last-child{border:none}
+  .tcard .flaw{font-size:11px;color:var(--warn);background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.25);border-radius:7px;padding:8px 10px;line-height:1.5}
+  .tcard .src{font-size:10px;color:var(--dim);padding:9px 14px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ===== LEFT NAV ===== -->
+  <aside class="left">
+    <div class="brand">
+      <div class="logo"><b>Super</b>Trader</div>
+      <div class="sub">AI 交易工作台 · DeepSeek Harness</div>
+    </div>
+    <div class="navscroll">
+      <div class="lgrp">主页</div>
+      <div class="nav active" data-v="chat" data-t="对话" data-s="自然语言驱动四步选股"><span class="ic">💬</span>对话</div>
+
+      <div class="lgrp">选股漏斗</div>
+      <div class="nav" data-v="fund" data-t="基本面" data-s="估值 + 分红 + 盈利质量"><span class="ic">📎</span>基本面<span class="step-n">①</span></div>
+      <div class="nav" data-v="tech" data-t="技术分析" data-s="价格行为 · Al Brooks 逐棒读图"><span class="ic">📈</span>技术分析<span class="step-n">②</span></div>
+      <div class="nav" data-v="quant" data-t="量化规则" data-s="super_trader 方向信号"><span class="ic">🔢</span>量化规则<span class="step-n">③</span></div>
+      <div class="nav" data-v="ai" data-t="AI 分析" data-s="蒸馏专家视角研判"><span class="ic">🎭</span>AI 分析<span class="step-n">④</span></div>
+
+      <div class="lgrp">团队</div>
+      <div class="nav" data-v="team" data-t="分析团队" data-s="蒸馏专家的设置与介绍"><span class="ic">👥</span>分析团队</div>
+
+      <div class="lgrp">输出</div>
+      <div class="nav" data-v="picks" data-t="选股结果" data-s="四步漏斗幸存标的"><span class="ic">⭐</span>选股结果<span class="step-n">2</span></div>
+    </div>
+
+    <div class="persona">
+      <div class="lbl">AI 分析视角（蒸馏专家）</div>
+      <button class="pbtn active" data-p="buffett"><span class="ava">🎩</span><span class="meta"><b>巴菲特</b><span>护城河 · 安全边际</span></span></button>
+      <button class="pbtn" data-p="cigar"><span class="ava">🚬</span><span class="meta"><b>烟蒂股</b><span>便宜 + 分红轮动</span></span></button>
+      <button class="pbtn" data-p="neutral"><span class="ava">⚙️</span><span class="meta"><b>中性量化</b><span>只看规则与数据</span></span></button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <section class="main">
+    <div class="top">
+      <span class="ctitle" id="vtitle">对话 <small id="vsub">自然语言驱动四步选股</small></span>
+      <span class="model" id="modelchip">视角：巴菲特</span>
+      <span class="spacer"></span>
+      <div class="stat"><span class="k">数据截止</span><span class="v">2026-11-05</span></div>
+      <div class="sep"></div>
+      <div class="stat"><span class="k">主流池</span><span class="v">62 标的</span></div>
+    </div>
+
+    <div class="viewport" id="viewport">
+
+      <!-- ===== CHAT (home) ===== -->
+      <section class="view active" id="v-chat">
+        <div class="stream">
+          <div class="turn user">
+            <div class="ic">🧑</div>
+            <div class="content">
+              <div class="who">我</div>
+              <div class="bubble"><p>帮我从主流池里筛今天值得关注的票，要基本面过得去、技术面不难看、量化规则也认可的，用巴菲特的视角给结论。</p></div>
+            </div>
+          </div>
+          <div class="turn ai">
+            <div class="ic" id="aiic">🎩</div>
+            <div class="content">
+              <div class="who" id="aiwho">Super Trader · 巴菲特视角</div>
+              <div class="bubble">
+                <p>按四步漏斗跑了一遍（数据截止 <b>2026-11-05</b>，主流池 62 个标的），点卡片可进对应页看明细：</p>
+                <div class="funnel">
+                  <div class="step pass" onclick="go('fund')"><span class="chk">✓</span><div class="n">① 基本面</div><div class="s">估值+分红</div><div class="r">62 → 18 只</div></div>
+                  <div class="step pass" onclick="go('tech')"><span class="chk">✓</span><div class="n">② 技术分析</div><div class="s">价格行为</div><div class="r">18 → 9 只</div></div>
+                  <div class="step pass" onclick="go('quant')"><span class="chk">✓</span><div class="n">③ 量化规则</div><div class="s">方向信号</div><div class="r">9 → 4 只</div></div>
+                  <div class="step pass" onclick="go('ai')"><span class="chk">✓</span><div class="n">④ AI 分析</div><div class="s">巴菲特</div><div class="r">4 → 2 只</div></div>
+                </div>
+                <p>最终入选 <b>2 只</b>：<b>601088 中国神华</b>、<b>600900 长江电力</b>。完整逐只介绍见 <span class="cite" onclick="go('picks')">选股结果</span>。</p>
+                <table class="restable">
+                  <tr><th>标的</th><th>量化方向</th><th class="num">规则分</th><th>巴菲特判断</th></tr>
+                  <tr><td><b>601088</b> 中国神华</td><td><span class="dir d-long">偏多 H1</span></td><td class="num">+0.62</td><td class="yes">✅ 现金牛、股息 7%+</td></tr>
+                  <tr><td><b>600900</b> 长江电力</td><td><span class="dir d-long">偏多 H3</span></td><td class="num">+0.55</td><td class="yes">✅ 公用事业护城河</td></tr>
+                  <tr><td><b>300750</b> 宁德时代</td><td><span class="dir d-flat">中性</span></td><td class="num">0.50</td><td class="no">❌ 贵、超能力圈</td></tr>
+                </table>
+                <div class="disc">⚠️ 量化方向是历史频率不是预测；主流池留出准确率仅 50.4%、覆盖率 21.4%，优势很薄。基本面/技术指标为示意，接真实数据后以实际为准。不构成投资建议。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="composer">
+          <div class="chips">
+            <span class="chip" onclick="fill(this)">今天哪些票量化偏多？</span>
+            <span class="chip" onclick="fill(this)">分析 601088 的基本面</span>
+            <span class="chip" onclick="fill(this)">用烟蒂股视角重筛一遍</span>
+            <span class="chip" onclick="fill(this)">这条规则的历史准确率？</span>
+          </div>
+          <div class="cbox">
+            <textarea id="ta" placeholder="问点什么…… 例如：帮我看看红利板块今天的量化信号" rows="1"></textarea>
+            <div class="toolbar">
+              <span class="tool" onclick="go('fund')">📎 基本面</span>
+              <span class="tool" onclick="go('tech')">📈 技术面</span>
+              <span class="tool" onclick="go('quant')">🔢 量化规则</span>
+              <span class="tool" onclick="go('ai')">🎭 AI 视角</span>
+              <button class="send">↑</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ① 基本面 ===== -->
+      <section class="view" id="v-fund">
+        <div class="pagewrap">
+          <h2 class="ph">① 基本面筛选 <span class="small muted">估值 + 分红 + 盈利质量</span></h2>
+          <p class="lead">漏斗第一步：先剔除贵的、不分红的、盈利质量差的。门槛可配置，下表为主流池逐只结果（示意，待接入财务数据源 L0 P1）。</p>
+          <div class="flowbar">
+            <div class="fb on">① 基本面<b>62 → 18</b></div>
+            <div class="fb" onclick="go('tech')">② 技术<b>18 → 9</b></div>
+            <div class="fb" onclick="go('quant')">③ 量化<b>9 → 4</b></div>
+            <div class="fb" onclick="go('ai')">④ AI<b>4 → 2</b></div>
+            <div class="fb" onclick="go('picks')">结果<b>2 只</b></div>
+          </div>
+          <div class="card"><div class="body">
+            <div class="crit">
+              <span class="cpill">股息率 <b>≥ 3%</b></span>
+              <span class="cpill">PE <b>≤ 20</b></span>
+              <span class="cpill">PB <b>≤ 3</b></span>
+              <span class="cpill">ROE <b>≥ 8%</b></span>
+              <span class="cpill">连续分红 <b>≥ 3 年</b></span>
+            </div>
+            <div class="src">阈值可在配置中调整；巴菲特视角会额外看自由现金流与护城河。</div>
+          </div></div>
+          <div class="card">
+            <h3><span class="dot"></span>逐只结果 <span class="tag">通过 18 / 62</span></h3>
+            <div class="body"><table>
+              <tr><th>标的</th><th class="num">股息率</th><th class="num">PE</th><th class="num">PB</th><th class="num">ROE</th><th>结论</th></tr>
+              <tr><td><b>601088</b> 中国神华</td><td class="num pass">7.2%</td><td class="num">9.1</td><td class="num">1.3</td><td class="num">14.8%</td><td class="pass">✅ 通过</td></tr>
+              <tr><td><b>600900</b> 长江电力</td><td class="num pass">3.6%</td><td class="num">18.2</td><td class="num">2.8</td><td class="num">12.1%</td><td class="pass">✅ 通过</td></tr>
+              <tr><td><b>000858</b> 五粮液</td><td class="num">2.1%</td><td class="num">17.5</td><td class="num">4.6</td><td class="num">24.0%</td><td class="warn">⚠ PB 超标</td></tr>
+              <tr><td><b>300750</b> 宁德时代</td><td class="num no">0.4%</td><td class="num no">31.0</td><td class="num">4.9</td><td class="num">20.3%</td><td class="fail">❌ 估值贵</td></tr>
+            </table>
+            <div class="src">财务字段为占位示意；接入后对应 L0「财务估值」维度组。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ② 技术分析 ===== -->
+      <section class="view" id="v-tech">
+        <div class="pagewrap">
+          <h2 class="ph">② 技术分析 · 价格行为 <span class="small muted">Al Brooks 逐棒读图</span></h2>
+          <p class="lead">不看指标，看<b>价格本身</b>。按 Al Brooks 价格行为框架读图：先判趋势 / 区间，标出最近 swing 高低点，再看是否出现<b>突破顺势</b>信号——收盘突破前 20 根极值、顺势入场、结构止损、2:1 目标。对基本面通过的 18 只逐只读一遍。</p>
+          <div class="flowbar">
+            <div class="fb" onclick="go('fund')">① 基本面<b>62 → 18</b></div>
+            <div class="fb on">② 技术<b>18 → 9</b></div>
+            <div class="fb" onclick="go('quant')">③ 量化<b>9 → 4</b></div>
+            <div class="fb" onclick="go('ai')">④ AI<b>4 → 2</b></div>
+            <div class="fb" onclick="go('picks')">结果<b>2 只</b></div>
+          </div>
+
+          <div class="card">
+            <h3><span class="dot"></span>主信号 · Brooks 突破顺势 <span class="tag">唯一经验证存活的规则</span></h3>
+            <div class="body">
+              <div class="crit">
+                <span class="cpill">突破窗口 N <b>= 20</b></span>
+                <span class="cpill">入场 <b>次根开盘</b></span>
+                <span class="cpill">止损 <b>swing 外侧 0.1 ATR</b></span>
+                <span class="cpill">最小风险 <b>0.5 ATR</b></span>
+                <span class="cpill">目标 <b>2 : 1</b></span>
+              </div>
+              <p class="small muted" style="margin-top:10px;line-height:1.9">
+                收盘价上破前 20 根最高收盘 → 做多；下破前 20 根最低收盘 → 做空。止损放最近已确认
+                swing 的外侧，目标为风险的 2 倍。这不是「涨了就追」——同数据上简单动量 edge≈0，
+                而突破顺势有 +0.1~0.2R 的微弱正期望，说明「突破前 N 根极值」这个结构带了信息。
+              </p>
+              <div class="src">来源：D:\价格行为学习资料\有效规则\规则_Brooks突破顺势.md（三组对比验证）</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3><span class="dot"></span>逐只价格行为读图 <span class="tag">通过 9 / 18</span></h3>
+            <div class="body"><table>
+              <tr><th>标的</th><th>市场结构</th><th>最近 swing</th><th>突破信号(N=20)</th><th class="num">风险/目标</th><th>结论</th></tr>
+              <tr>
+                <td><b>601088</b> 中国神华</td>
+                <td class="pass">上升趋势</td>
+                <td class="small muted">HL 回踩后抬高</td>
+                <td class="pass">收盘上破 20 根高</td>
+                <td class="num">1.5ATR / 2:1</td>
+                <td class="pass">✅ 顺势做多</td>
+              </tr>
+              <tr>
+                <td><b>600900</b> 长江电力</td>
+                <td class="pass">上升趋势(缓)</td>
+                <td class="small muted">窄幅 swing 抬高</td>
+                <td class="pass">收盘上破 20 根高</td>
+                <td class="num">1.2ATR / 2:1</td>
+                <td class="pass">✅ 顺势做多</td>
+              </tr>
+              <tr>
+                <td><b>000858</b> 五粮液</td>
+                <td class="warn">交易区间</td>
+                <td class="small muted">在区间上沿震荡</td>
+                <td class="warn">贴近但未破</td>
+                <td class="num">— / —</td>
+                <td class="warn">⚠ 等突破确认</td>
+              </tr>
+              <tr>
+                <td><b>300750</b> 宁德时代</td>
+                <td class="no">趋势转弱 / 顶背离</td>
+                <td class="small muted">swing 高点走低(LH)</td>
+                <td class="no">无突破 · 风险&lt;0.5ATR</td>
+                <td class="num muted">跳过</td>
+                <td class="fail">❌ 结构转弱</td>
+              </tr>
+            </table>
+            <div class="src">结构 / swing / 突破判定依据 Al Brooks 价格行为；K 线取自 super_trader 缓存数据。swing 检测须用修复版（避免用未来 bar，见踩坑清单 #1）。</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3><span class="dot w"></span>诚实声明 <span class="tag">先证伪再相信</span></h3>
+            <div class="body small muted" style="line-height:1.95">
+              Brooks 突破顺势状态为「<b class="warn">可能有效，未达实盘门槛</b>」：三组对比验证（A 规则 / B 全随机 / C 位置匹配）里，
+              XAUUSD H4、USDJPY H4、US500 D1 显示微弱正期望，但——
+              <ul style="margin:6px 0 0 18px">
+                <li>参数稳健性仅 <b>2/5</b>（只有 N=20、25 有效，参数悬崖，过拟合嫌疑）</li>
+                <li>跨品种存活率 <b>3/9</b>（更像「金价/日元这几年强势」的特定历史）</li>
+                <li>效应量 +0.2R 很薄，扣点差滑点后可交易空间窄</li>
+              </ul>
+              A 股日线能否复现尚需用同一套三组对比框架重测。<b>此页为价格行为读图的结构示意，不构成买卖信号。</b>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ③ 量化规则 ===== -->
+      <section class="view" id="v-quant">
+        <div class="pagewrap">
+          <h2 class="ph">③ 量化规则 <span class="small muted">super_trader 方向信号（已产出）</span></h2>
+          <p class="lead">核心环节，数据来自你已有的 super_trader：每个标的×持有期一个方向（偏多/偏空/中性）+ 规则投票分 + 该标的留出段准确率。只保留方向明确且规则可靠的。</p>
+          <div class="flowbar">
+            <div class="fb" onclick="go('fund')">① 基本面<b>62 → 18</b></div>
+            <div class="fb" onclick="go('tech')">② 技术<b>18 → 9</b></div>
+            <div class="fb on">③ 量化<b>9 → 4</b></div>
+            <div class="fb" onclick="go('ai')">④ AI<b>4 → 2</b></div>
+            <div class="fb" onclick="go('picks')">结果<b>2 只</b></div>
+          </div>
+          <div class="card"><div class="body">
+            <div class="crit">
+              <span class="cpill">方向 <b>≠ 中性</b></span>
+              <span class="cpill">该标的 test 准确率 <b>≥ 53%</b></span>
+              <span class="cpill">集成 k <b>1–10</b></span>
+              <span class="cpill">阈值 <b>0.50–0.90</b></span>
+            </div>
+            <div class="src">池级口径：留出准确率 50.38% · 覆盖率 21.44% · 62 标的 / 310 模型 · method accuracy_abstention_v1</div>
+          </div></div>
+          <div class="card">
+            <h3><span class="dot"></span>今日方向信号 <span class="tag">today_signals.json</span></h3>
+            <div class="body"><table>
+              <tr><th>标的</th><th>方向 / 持有期</th><th class="num">score</th><th class="num">k/阈值</th><th class="num">test准确率</th><th>命中规则</th></tr>
+              <tr><td><b>601088</b> 中国神华</td><td><span class="dir d-long">偏多 H1</span></td><td class="num">0.62</td><td class="num">3 / 0.55</td><td class="num pass">54.1%</td><td class="small muted">friday_trend · vol_price_confirm · narrow_range_break</td></tr>
+              <tr><td><b>600900</b> 长江电力</td><td><span class="dir d-long">偏多 H3</span></td><td class="num">0.55</td><td class="num">3 / 0.55</td><td class="num pass">53.4%</td><td class="small muted">rsi2_revert · pullback_ma20 · vol_price_confirm</td></tr>
+              <tr><td><b>399001</b> 深证成指</td><td><span class="dir d-short">偏空 H1</span></td><td class="num">0.60</td><td class="num">3 / 0.55</td><td class="num">52.0%</td><td class="small muted">（指数，不进选股）</td></tr>
+              <tr><td><b>300750</b> 宁德时代</td><td><span class="dir d-flat">中性</span></td><td class="num">0.50</td><td class="num">— / —</td><td class="num muted">—</td><td class="small muted">无足够投票</td></tr>
+            </table>
+            <div class="src">字段对应 today_signals.json 的 latest.direction(+1/0/-1)、latest.score；规则/k/阈值/准确率来自 accuracy.json 的 model 与 test 段。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ④ AI 分析 ===== -->
+      <section class="view" id="v-ai">
+        <div class="pagewrap">
+          <h2 class="ph">④ AI 分析 · 全专家研判 <span class="small muted">所有蒸馏专家并排对比</span></h2>
+          <p class="lead">对量化通过的 4 只，<b>把所有蒸馏专家的研判同时列出</b>——专家团队 &gt; 全能选手，交叉比对才看得出分歧与共识。左下角选中的视角会高亮，但这里不隐藏其他专家。结论是可证伪的「判断依据」，不是角色扮演。</p>
+          <div class="flowbar">
+            <div class="fb" onclick="go('fund')">① 基本面<b>62 → 18</b></div>
+            <div class="fb" onclick="go('tech')">② 技术<b>18 → 9</b></div>
+            <div class="fb" onclick="go('quant')">③ 量化<b>9 → 4</b></div>
+            <div class="fb on">④ AI<b>4 → 2</b></div>
+            <div class="fb" onclick="go('picks')">结果<b>2 只</b></div>
+          </div>
+          <div class="card">
+            <h3><span class="dot"></span>专家筛选 <span class="tag" id="exp-count">共 7 位专家</span></h3>
+            <div class="body">
+              <div class="expfilter" id="expfilter"></div>
+              <div class="legend">
+                <span><b class="yes">✅</b> 看多/入选</span>
+                <span><b class="warn">⏸</b> 观望</span>
+                <span><b class="no">❌</b> 回避</span>
+                <span>· 主视角高亮：<b id="active-exp-name">巴菲特</b>（左下角切换）</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 每只标的一张卡，专家研判在卡内自动换行，专家再多也不溢出 -->
+          <div id="stockcards"></div>
+
+          <div class="card"><div class="body small muted" style="line-height:1.9">
+            <b style="color:var(--txt)">布局说明：</b>以<b>标的</b>为卡片，专家研判在卡内自适应换行——专家从 3 个加到 20 个也不会撑破版面。
+            顶部可勾选只看关注的专家。共识条按「看多 / 观望 / 回避」的票数比例着色。
+            <b style="color:var(--txt)">数据：</b>专家与研判由下方 JS 数据模型驱动，接入真实蒸馏专家输出时只需替换 <code>EXPERTS</code> 与 <code>VERDICTS</code>。
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== 分析团队 ===== -->
+      <section class="view" id="v-team">
+        <div class="pagewrap">
+          <h2 class="ph">👥 分析团队 <span class="small muted">蒸馏专家的设置与介绍</span></h2>
+          <p class="lead">每个专家是一个蒸馏出的「判断函数」——描述的是<b>决策依据</b>而非角色扮演（要「是」，不要「像」）。在这里启用/停用专家、查看其理念、判断依据、已知缺陷与蒸馏来源。启用的专家会出现在「AI 分析」页参与研判。</p>
+          <div class="card"><div class="body" style="display:flex;gap:18px;flex-wrap:wrap">
+            <div class="stat"><span class="k">团队规模</span><span class="v" id="team-total">7 位</span></div>
+            <div class="sep"></div>
+            <div class="stat"><span class="k">已启用</span><span class="v" id="team-on" style="color:var(--down)">7 位</span></div>
+            <div class="sep"></div>
+            <div class="stat"><span class="k">当前主视角</span><span class="v" id="team-main" style="color:var(--acc)">巴菲特</span></div>
+            <div style="margin-left:auto;align-self:center" class="small muted">＋ 新增专家：在数据模型 <code>EXPERTS</code> 增加一项即可（接蒸馏产出后自动出现）</div>
+          </div></div>
+          <div id="teamcards"></div>
+        </div>
+      </section>
+
+      <!-- ===== 选股结果 ===== -->
+      <section class="view" id="v-picks">
+        <div class="pagewrap">
+          <h2 class="ph">⭐ 选股结果 <span class="small muted">四步漏斗幸存标的 · 逐只介绍</span></h2>
+          <p class="lead">同时通过基本面 + 技术分析 + 量化规则 + AI 分析的标的。每只汇总四步证据，点右上角数字可追溯到对应环节。</p>
+
+          <div class="stock">
+            <div class="sh"><span class="tk">601088</span><span class="nm">中国神华 · 能源 / 煤炭</span><span class="rank">漏斗第 1</span></div>
+            <div class="grid4">
+              <div class="cell"><div class="st-n">① 基本面</div><div class="st-v pass">股息 7.2%</div><div class="st-d">PE 9.1 · PB 1.3 · ROE 14.8%</div></div>
+              <div class="cell"><div class="st-n">② 价格行为</div><div class="st-v pass">上升趋势</div><div class="st-d">上破20根高 · 结构止损 2:1</div></div>
+              <div class="cell"><div class="st-n">③ 量化</div><div class="st-v"><span class="dir d-long">偏多 H1</span></div><div class="st-d">score 0.62 · test 54.1%</div></div>
+              <div class="cell"><div class="st-n">④ AI(巴菲特)</div><div class="st-v yes">入选</div><div class="st-d">现金牛 + 安全边际</div></div>
+            </div>
+            <div class="verdict"><b>综合：</b>四步全过，首选。便宜、分红实打实、量化 H1 偏多且该规则留出段站得住。风险：煤价周期下行、量化优势薄。</div>
+          </div>
+
+          <div class="stock">
+            <div class="sh"><span class="tk">600900</span><span class="nm">长江电力 · 公用事业 / 水电</span><span class="rank">漏斗第 2</span></div>
+            <div class="grid4">
+              <div class="cell"><div class="st-n">① 基本面</div><div class="st-v pass">股息 3.6%</div><div class="st-d">PE 18.2 · PB 2.8 · ROE 12.1%</div></div>
+              <div class="cell"><div class="st-n">② 价格行为</div><div class="st-v pass">上升趋势(缓)</div><div class="st-d">上破20根高 · 结构止损 2:1</div></div>
+              <div class="cell"><div class="st-n">③ 量化</div><div class="st-v"><span class="dir d-long">偏多 H3</span></div><div class="st-d">score 0.55 · test 53.4%</div></div>
+              <div class="cell"><div class="st-n">④ AI(巴菲特)</div><div class="st-v yes">入选</div><div class="st-d">护城河深 · 类债</div></div>
+            </div>
+            <div class="verdict"><b>综合：</b>作为防御补充。确定性高、现金流稳，适合低仓长持。风险：估值已不算便宜，向上弹性有限。</div>
+          </div>
+
+          <div class="card"><div class="body small muted">
+            落选记录：五粮液（基本面 PB 超标 / AI 缺安全边际）、宁德时代（价格行为结构转弱·顶背离 + 超能力圈）、深证成指（指数不进选股）。换「烟蒂股」视角可能得到不同结果——切换左下角视角重跑。
+          </div></div>
+        </div>
+      </section>
+
+    </div>
+  </section>
+</div>
+
+<script>
+  var navs = document.querySelectorAll('.nav');
+  var views = document.querySelectorAll('.view');
+  var vtitle = document.getElementById('vtitle');
+  var vsub = document.getElementById('vsub');
+  function go(v){
+    navs.forEach(function(x){x.classList.toggle('active', x.dataset.v===v)});
+    views.forEach(function(x){x.classList.remove('active')});
+    var sec = document.getElementById('v-' + v);
+    if(sec) sec.classList.add('active');
+    var n = document.querySelector('.nav[data-v="'+v+'"]');
+    if(n){ vtitle.firstChild.textContent = n.dataset.t + ' '; vsub.textContent = n.dataset.s; }
+    document.getElementById('viewport').scrollTop = 0;
+  }
+  navs.forEach(function(n){ n.addEventListener('click', function(){ go(n.dataset.v); }); });
+
+  // ===== 蒸馏专家数据模型（加专家只需往这里加一项；接真实输出时替换本块）=====
+  var pmap={buffett:'巴菲特',cigar:'烟蒂股',neutral:'中性量化'};
+  var pico={buffett:'🎩',cigar:'🚬',neutral:'⚙️'};
+  // 全部专家（id 唯一；前三个对应左下角可切换的主视角，其余为只读研判专家，随时可扩到 20+）
+  var EXPERTS=[
+    {id:'buffett', name:'巴菲特', icon:'🎩', tag:'护城河·安全边际', enabled:true,
+      desc:'长期价值投资，买「以合理价格买优秀公司」。只在能力圈内、有宽护城河、留足安全边际时出手。',
+      basis:['①生意有没有持久护城河','②当前价格是否留有安全边际','③是否在自己能力圈内'],
+      flaw:'低换手、错过题材与高成长；熊市抗跌、牛市跑输赛道股。', source:'蒸馏自公开致股东信与投资案例'},
+    {id:'cigar', name:'烟蒂股', icon:'🚬', tag:'便宜·分红轮动', enabled:true,
+      desc:'格雷厄姆「捡烟蒂」的 A 股适配版：只买便宜到不像话、但仍真金白银分红的公司，靠股息 + 估值回归赚钱，按股息率每日轮动。',
+      basis:['①便宜（低 PB / 高股息）','②仍在持续分红','③没人爱（被嫌弃但没基本面崩坏）'],
+      flaw:'牛市必然跑输——买的是「便宜」不是「成长」。', source:'蒸馏自雪球「烟蒂派」实战思路'},
+    {id:'neutral', name:'中性量化', icon:'⚙️', tag:'只看规则与数据', enabled:true,
+      desc:'不带任何风格偏好，只采信 super_trader 量化规则的方向信号与留出段准确率，方向不明确或准确率不达标就不表态。',
+      basis:['①方向≠中性','②该标的 test 准确率达标','③规则投票分足够'],
+      flaw:'纯历史频率，优势很薄（池级约 50.4%）；无基本面/事件判断。', source:'super_trader accuracy 输出'},
+    {id:'board', name:'低位首板', icon:'🎯', tag:'位置·板块·分时', enabled:true,
+      desc:'打板派。只打低位首板，综合位置、板块、大盘、形态、分时多条件，用苛刻条件换打板质量（最严档约月均 3 次）。',
+      basis:['①低位（不追高位板）','②板块与大盘环境配合','③分时承接健康'],
+      flaw:'情绪退潮期回撤大；A 股量化占比上升后生存空间被压缩。', source:'蒸馏自低位首板盯盘策略（三档严苛度）'},
+    {id:'growth', name:'成长派', icon:'🚀', tag:'景气·业绩加速', enabled:true,
+      desc:'产业趋势 + 业绩加速。买景气向上、业绩拐点或加速的成长股，容忍较高估值换取弹性。',
+      basis:['①行业景气向上','②业绩同比/环比加速','③估值与成长匹配(PEG)'],
+      flaw:'景气反转时杀估值 + 杀业绩双杀；对拐点判断依赖强。', source:'蒸馏自成长股投资框架'},
+    {id:'pa', name:'价格行为', icon:'📈', tag:'Brooks 突破顺势', enabled:true,
+      desc:'Al Brooks 价格行为逐棒读图，只看价格本身。核心信号为突破顺势：收盘破前 20 根极值顺势入场，结构止损，2:1 目标。',
+      basis:['①趋势/区间结构判定','②收盘突破前 N 根极值','③结构止损且风险≥0.5ATR'],
+      flaw:'经验证「可能有效、未达实盘门槛」：参数稳健性 2/5、跨品种存活 3/9、效应量薄。', source:'价格行为学习资料·三组对比验证'},
+    {id:'hotmoney', name:'游资复盘', icon:'🔥', tag:'题材·情绪·接力', enabled:true,
+      desc:'抓题材主线与市场情绪，复盘游资席位/龙虎榜与发言，做盘前预案与接力判断。',
+      basis:['①题材级别与持续性','②市场情绪温度与连板高度','③资金与席位动向'],
+      flaw:'依赖舆情/龙虎榜数据质量；情绪拐点难把握，易被量化反向收割。', source:'蒸馏自淘股吧游资复盘数据管道'}
+  ];
+  // 候选标的 + 各专家研判：v = yes/wait/no，why = 一句理由
+  var STOCKS=[
+    {code:'601088', name:'中国神华', cat:'能源/煤炭', dir:'偏多 H1', dcls:'d-long', v:{
+      buffett:{v:'yes',why:'煤电一体现金牛，股息 7%+ 提供安全边际'},
+      cigar:{v:'yes',why:'股息率居首、PB 1.3 够便宜，典型烟蒂'},
+      neutral:{v:'yes',why:'方向偏多且 test 54.1%，规则认可'},
+      board:{v:'wait',why:'非首板标的，不在打板射程'},
+      growth:{v:'no',why:'低增长价值股，非成长对象'},
+      pa:{v:'yes',why:'上升趋势，收盘上破 20 根高'},
+      hotmoney:{v:'wait',why:'红利防御，非当下题材主线'}
+    }},
+    {code:'600900', name:'长江电力', cat:'公用/水电', dir:'偏多 H3', dcls:'d-long', v:{
+      buffett:{v:'yes',why:'水电护城河深、现金流稳定，类债属性'},
+      cigar:{v:'wait',why:'股息 3.6%、PB 2.8 不够便宜，非极致烟蒂'},
+      neutral:{v:'yes',why:'方向偏多且 test 53.4%，规则认可'},
+      board:{v:'no',why:'低波慢牛，与打板无关'},
+      growth:{v:'no',why:'无成长弹性'},
+      pa:{v:'yes',why:'缓升趋势，上破 20 根高'},
+      hotmoney:{v:'wait',why:'防御品种，情绪面无亮点'}
+    }},
+    {code:'000858', name:'五粮液', cat:'消费/白酒', dir:'中性', dcls:'d-flat', v:{
+      buffett:{v:'wait',why:'品牌护城河在，但估值不够便宜，缺安全边际'},
+      cigar:{v:'no',why:'PB 4.6 太贵、股息 2.1% 偏低，不符烟蒂'},
+      neutral:{v:'no',why:'量化中性、无足够投票，不进场'},
+      board:{v:'no',why:'无首板形态'},
+      growth:{v:'wait',why:'高端白酒增速放缓，观察'},
+      pa:{v:'wait',why:'交易区间，贴上沿未破'},
+      hotmoney:{v:'no',why:'非活跃题材'}
+    }},
+    {code:'300750', name:'宁德时代', cat:'电新/电池', dir:'中性', dcls:'d-flat', v:{
+      buffett:{v:'no',why:'技术变化快、周期性强，超出能力圈'},
+      cigar:{v:'no',why:'PE 31、几乎不分红，成长股非烟蒂'},
+      neutral:{v:'no',why:'量化中性、价格行为转弱，不进场'},
+      board:{v:'no',why:'高位，不打'},
+      growth:{v:'wait',why:'赛道龙头但估值已透支，观察'},
+      pa:{v:'no',why:'顶背离、swing 高点走低'},
+      hotmoney:{v:'no',why:'杀估值退潮，不接'}
+    }}
+  ];
+
+  var VLABEL={yes:'✅ 看多',wait:'⏸ 观望',no:'❌ 回避'};
+  var mainExpert='buffett';
+  var hidden={}; // 被筛掉的专家 id
+
+  function enabledExperts(){ return EXPERTS.filter(function(e){return e.enabled;}); }
+
+  function renderFilter(){
+    var f=document.getElementById('expfilter'); if(!f) return;
+    f.innerHTML='';
+    enabledExperts().forEach(function(e){
+      var c=document.createElement('div');
+      c.className='efchip'+(hidden[e.id]?' off':'')+(e.id===mainExpert?' main':'');
+      c.innerHTML='<span class="ava">'+e.icon+'</span>'+e.name;
+      c.onclick=function(){ hidden[e.id]=!hidden[e.id]; renderFilter(); renderCards(); };
+      f.appendChild(c);
+    });
+    var cnt=document.getElementById('exp-count'); if(cnt) cnt.textContent='已启用 '+enabledExperts().length+' 位专家';
+  }
+
+  function renderCards(){
+    var host=document.getElementById('stockcards'); if(!host) return;
+    var shown=enabledExperts().filter(function(e){return !hidden[e.id];});
+    host.innerHTML='';
+    STOCKS.forEach(function(s){
+      var ny=0,nw=0,nn=0;
+      shown.forEach(function(e){var v=(s.v[e.id]||{}).v; if(v==='yes')ny++;else if(v==='wait')nw++;else if(v==='no')nn++;});
+      var tot=Math.max(shown.length,1);
+      var bar='<i class="b-yes" style="width:'+(ny/tot*100)+'%"></i>'+
+              '<i class="b-wait" style="width:'+(nw/tot*100)+'%"></i>'+
+              '<i class="b-no" style="width:'+(nn/tot*100)+'%"></i>';
+      var tiles=shown.map(function(e){
+        var vd=s.v[e.id]||{v:'wait',why:'—'};
+        return '<div class="tile'+(e.id===mainExpert?' main':'')+'">'+
+          '<div class="th"><span class="ava">'+e.icon+'</span><b>'+e.name+'</b>'+
+          '<span class="vdot v-'+vd.v+'">'+VLABEL[vd.v]+'</span></div>'+
+          '<div class="vwhy">'+vd.why+'</div></div>';
+      }).join('');
+      var card='<div class="scard">'+
+        '<div class="sh"><span class="tk">'+s.code+'</span><span class="cat">'+s.name+' · '+s.cat+
+          ' · <span class="dir '+s.dcls+'">'+s.dir+'</span></span>'+
+          '<span class="cons"><span class="conslabel">看多 '+ny+' · 观望 '+nw+' · 回避 '+nn+'</span>'+
+          '<span class="consbar">'+bar+'</span></span></div>'+
+        '<div class="tiles">'+tiles+'</div></div>';
+      host.insertAdjacentHTML('beforeend', card);
+    });
+  }
+
+  // ===== 分析团队页渲染 =====
+  function renderTeam(){
+    var host=document.getElementById('teamcards'); if(!host) return;
+    host.innerHTML='';
+    EXPERTS.forEach(function(e){
+      var basis=e.basis.map(function(b){return '<li>'+b+'</li>';}).join('');
+      var card=document.createElement('div');
+      card.className='tcard'+(e.enabled?'':' off');
+      card.innerHTML=
+        '<div class="th"><span class="ava">'+e.icon+'</span>'+
+          '<span><span class="nm">'+e.name+(e.id===mainExpert?'<span class="mainbadge">主视角</span>':'')+'</span>'+
+          '<span class="tg">'+e.tag+'</span></span>'+
+          '<span class="sw'+(e.enabled?' on':'')+'" data-id="'+e.id+'" title="启用 / 停用"></span></div>'+
+        '<div class="tb">'+
+          '<div class="desc">'+e.desc+'</div>'+
+          '<div class="sec-t">判断依据（决策函数）</div><ul class="basis">'+basis+'</ul>'+
+          '<div class="sec-t">已知缺陷</div><div class="flaw">'+e.flaw+'</div>'+
+        '</div>'+
+        '<div class="src">蒸馏来源：'+e.source+'</div>';
+      host.appendChild(card);
+    });
+    host.querySelectorAll('.sw').forEach(function(sw){
+      sw.onclick=function(){
+        var id=sw.dataset.id, e=EXPERTS.find(function(x){return x.id===id;});
+        e.enabled=!e.enabled;
+        renderTeam(); renderFilter(); renderCards(); updateTeamStats();
+      };
+    });
+    updateTeamStats();
+  }
+  function updateTeamStats(){
+    var t=document.getElementById('team-total'); if(t) t.textContent=EXPERTS.length+' 位';
+    var o=document.getElementById('team-on'); if(o) o.textContent=enabledExperts().length+' 位';
+    var m=document.getElementById('team-main'); if(m) m.textContent=pmap[mainExpert]||mainExpert;
+  }
+
+  // persona switch — 仅切换「主视角」，启用的专家始终可见，主视角专家描边高亮
+  document.querySelectorAll('.pbtn').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.pbtn').forEach(function(x){x.classList.remove('active')});
+      b.classList.add('active');
+      var p=b.dataset.p;
+      mainExpert=p;
+      document.getElementById('modelchip').textContent='视角：'+pmap[p];
+      var aiic=document.getElementById('aiic'); if(aiic) aiic.textContent=pico[p];
+      var aiwho=document.getElementById('aiwho'); if(aiwho) aiwho.textContent='Super Trader · '+pmap[p]+'视角';
+      var nm=document.getElementById('active-exp-name'); if(nm) nm.textContent=pmap[p];
+      renderFilter(); renderCards(); renderTeam();
+    });
+  });
+  renderFilter(); renderCards(); renderTeam();
+
+  // composer helpers
+  function fill(el){ var ta=document.getElementById('ta'); ta.value=el.textContent; ta.focus(); autogrow(ta); }
+  var ta=document.getElementById('ta');
+  function autogrow(t){ t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,160)+'px'; }
+  ta.addEventListener('input', function(){ autogrow(ta); });
+</script>
+</body>
+</html>

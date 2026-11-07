@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Super Trader · 投研工作台</title>
+  <style>/*__WORKBENCH_CSS__*/</style>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">跳到工作区</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="工作台导航">
+      <a class="brand" href="#chat" aria-label="Super Trader 首页"><span class="brand-mark">S<span></span></span><span>SUPER TRADER<small>独立思考 · 协同研究</small></span></a>
+      <button class="workspace-switch" data-action="workspace-settings"><span class="workspace-icon">研</span><span>我的研究空间<small>个人工作区 · 本地演示</small></span><span class="icon-slot" data-icon="chevrons"></span></button>
+      <div class="nav-section-label">工作空间</div>
+      <nav id="main-nav">
+        <a class="nav-item active" href="#chat" data-view="chat"><span data-icon="message"></span><span>研究工作台</span><kbd>⌘ K</kbd></a>
+        <a class="nav-item" href="#picks" data-view="picks"><span data-icon="bookmark"></span><span>研究清单</span><span class="nav-count" id="watchlist-count">0</span></a>
+        <a class="nav-item" href="#history" data-view="history"><span data-icon="history"></span><span>任务记录</span><span class="nav-dot"></span></a>
+        <div class="nav-section-label">研究流水线</div>
+        <a class="nav-item" href="#fund" data-view="fund"><span data-icon="layers"></span><span>基本面研究</span><span class="step-index">01</span></a>
+        <a class="nav-item" href="#tech" data-view="tech"><span data-icon="chart"></span><span>技术分析</span><span class="step-index">02</span></a>
+        <a class="nav-item" href="#quant" data-view="quant"><span data-icon="sliders"></span><span>量化信号</span><span class="step-index">03</span></a>
+        <a class="nav-item" href="#ai" data-view="ai"><span data-icon="sparkles"></span><span>专家会审</span><span class="step-index">04</span></a>
+        <div class="nav-section-label">管理</div>
+        <a class="nav-item" href="#team" data-view="team"><span data-icon="users"></span><span>分析团队</span><span class="team-nav-count">7</span></a>
+        <a class="nav-item" href="#data" data-view="data"><span data-icon="database"></span><span>数据与报告</span></a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="environment-card"><span class="live-dot"></span><span>本地演示环境<small>无模型调用 · 无实盘交易</small></span><span data-icon="shield"></span></div>
+        <button class="profile" data-action="workspace-settings"><span class="profile-avatar">ME</span><span>个人研究员<small id="save-state">设置自动保存至本机</small></span><span data-icon="settings"></span></button>
+      </div>
+    </aside>
+    <div class="mobile-scrim" data-action="close-nav" hidden></div>
+    <div class="main-shell">
+      <header class="topbar">
+        <button class="icon-button mobile-menu" aria-label="打开导航" data-action="toggle-nav"><span data-icon="menu"></span></button>
+        <div class="breadcrumb"><span>工作空间</span><span class="crumb-separator">/</span><strong id="page-title">研究工作台</strong></div>
+        <div class="topbar-right"><span class="snapshot-label"><span class="live-dot"></span>日线快照 <b id="snapshot-date">2026.11.05</b></span><span class="top-divider"></span><button class="icon-button" data-action="command" aria-label="搜索页面与操作" title="搜索 · Ctrl / ⌘ K"><span data-icon="search"></span></button><button class="icon-button" data-action="help" aria-label="使用说明"><span data-icon="help"></span></button><span class="top-avatar">ME</span></div>
+      </header>
+      <main class="workspace" id="workspace" tabindex="-1"></main>
+      <footer class="statusbar"><span><span class="tiny-dot"></span><span id="status-left">工作区就绪</span></span><span>离线原型 <i>·</i> 配置仅在本机生效 <i>·</i> 不构成投资建议</span><button class="text-button" data-action="activity">查看活动记录 <span data-icon="chevron-right"></span></button></footer>
+    </div>
+  </div>
+  <div class="overlay" id="overlay" hidden></div>
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden></aside>
+  <dialog id="modal" aria-labelledby="modal-title"></dialog>
+  <div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
+  <input type="file" id="config-import" accept="application/json,.json" hidden>
+  <script id="workbench-data" type="application/json">/*__WORKBENCH_DATA__*/</script>
+  <script>/*__WORKBENCH_JS__*/</script>
+</body>
+</html>
