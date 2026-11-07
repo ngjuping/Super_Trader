@@ -27,6 +27,13 @@ reports/**/*.parquet
 # ---------------- 本地配置（含本机数据路径） ----------------
 config.json
 
+# 加密货币横截面纸面报告可由 crypto-xs 重建，不入库
+reports/crypto_xs/
+
+# 实盘账本和操作员本地配置，可能包含运行状态，不入库
+data/crypto_xs_live/
+config/crypto_xs_live.json
+
 # ---------------- 临时文件 ----------------
 *.tmp
 *.bak
