@@ -90,6 +90,72 @@ def test_unfinished_pagination_fails_closed_instead_of_looking_empty():
         client.fetch_protection()
 
 
+LINK_LEVERAGE_PAGES = [
+    {"symbol": "LINKUSDT", "positionIdx": 0, "side": "", "size": "0", "leverage": "1",
+     "positionStatus": "Normal", "createdTime": "1794063867198", "updatedTime": "1794063867198",
+     "seq": -1, "markPrice": "10.87", "avgPrice": "0"},
+    {"symbol": "LINKUSDT", "positionIdx": 0, "side": "", "size": "0", "leverage": "10",
+     "positionStatus": "", "createdTime": "", "updatedTime": "", "seq": -1,
+     "markPrice": "", "avgPrice": ""},
+]
+
+
+def test_duplicate_position_slot_with_different_leverage_is_not_chosen():
+    from super_trader.bybit_private import fold_position_rows
+    from super_trader.crypto_live import leverage_is_one
+
+    forward, modes = fold_position_rows(LINK_LEVERAGE_PAGES)
+    backward, _modes = fold_position_rows(list(reversed(LINK_LEVERAGE_PAGES)))
+    assert "LINKUSDT" not in forward and "LINKUSDT" not in backward
+    assert modes["LINKUSDT"] == 0
+
+    class Snap:
+        leverage_by_symbol = forward
+        position_mode_by_symbol = modes
+
+    assert leverage_is_one(Snap(), ("LINKUSDT",)) is False
+
+
+def test_agreeing_duplicate_rows_keep_the_shared_leverage():
+    from super_trader.bybit_private import fold_position_rows
+
+    rows = [dict(LINK_LEVERAGE_PAGES[0]), dict(LINK_LEVERAGE_PAGES[1], leverage="1")]
+    leverage, modes = fold_position_rows(rows)
+    assert leverage["LINKUSDT"] == 1.0
+    assert modes["LINKUSDT"] == 0
+
+
+def test_paginated_position_rows_are_all_folded():
+    pages = {
+        None: (LINK_LEVERAGE_PAGES[:1], "page-2"),
+        "page-2": (LINK_LEVERAGE_PAGES[1:], ""),
+    }
+
+    def transport(method, url, headers, body):
+        if "/v5/user/query-api" in url:
+            payload = {"retCode": 0, "result": {"permissions": {
+                "ContractTrade": ["Order", "Position"], "Wallet": [],
+            }}}
+            return 200, json.dumps(payload).encode()
+        if "/v5/account/wallet-balance" in url:
+            payload = {"retCode": 0, "result": {"list": [{"coin": [{
+                "coin": "USDT", "walletBalance": "121.50290183", "totalPositionIM": "0",
+                "totalOrderIM": "0", "locked": "0", "bonus": "0", "borrowAmount": "0",
+            }]}]}}
+            return 200, json.dumps(payload).encode()
+        if "/v5/position/list" in url:
+            cursor = "page-2" if "cursor=page-2" in url else None
+            rows, next_cursor = pages[cursor]
+            payload = {"retCode": 0, "result": {"list": rows, "nextPageCursor": next_cursor}}
+            return 200, json.dumps(payload).encode()
+        return 200, b'{"retCode":0,"result":{"list":[]}}'
+
+    client = _client(transport)
+    snapshot = client.fetch_protection()
+    assert snapshot.pages_complete is True
+    assert "LINKUSDT" not in snapshot.leverage_by_symbol
+
+
 def test_instrument_rows_parse_the_checked_filters():
     row = {
         "symbol": "SUIUSDT", "status": "Trading", "contractType": "LinearPerpetual",

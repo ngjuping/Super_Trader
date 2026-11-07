@@ -133,6 +133,19 @@ def test_snapshot_pair_fits_under_100_and_respects_steps():
     assert tiny is None
 
 
+def test_conflicting_link_leverage_rows_do_not_open(tmp_path):
+    from super_trader.bybit_private import fold_position_rows
+    from tests.test_bybit_private import LINK_LEVERAGE_PAGES
+
+    leverage, modes = fold_position_rows(LINK_LEVERAGE_PAGES)
+    leverage.update({"AVAXUSDT": 10.0, "SUIUSDT": 10.0})
+    modes.update({"AVAXUSDT": 0, "SUIUSDT": 0})
+    broker = FakeBroker(_snapshot(leverage_by_symbol=leverage, position_mode_by_symbol=modes))
+    result = run_cycle(_config(tmp_path), Ledger(tmp_path / "ledger.json"), broker, _market(), 0)
+    assert broker.created == []
+    assert any("leverage" in item for item in result["blockers"])
+
+
 def test_ten_x_leverage_and_unacknowledged_share_send_nothing(tmp_path):
     broker = FakeBroker(_snapshot(leverage_by_symbol={symbol: 10.0 for symbol in FROZEN_UNIVERSE}))
     result = run_cycle(_config(tmp_path), Ledger(tmp_path / "ledger.json"), broker, _market(), 0)

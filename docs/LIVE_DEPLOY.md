@@ -35,6 +35,15 @@ The loop waits 60 seconds between passes. Timestamps are UTC. A Bybit linear dai
 
 LINKUSDT, AVAXUSDT, and SUIUSDT were last read at 10x. This program still refuses new entries until a fresh read shows leverage 1 and `positionIdx` 0. It will not send the leverage change. The symbol-only calls are below. Until that read succeeds, `--supervise` stays up, writes `entries_blocked: true`, and sends no opening order.
 
+A later full pagination of LINKUSDT contained two rows for position index 0: one `Normal` row with leverage 1 and timestamps, and one later page with leverage 10 and empty status, times, and mark. Bybit documents one slot per `positionIdx` and does not define which duplicate wins. The adapter does not drop either row and does not let the last page replace the first. Unequal leverage on that slot leaves the symbol unknown, so the 1x gate stays closed. AVAX and SUI were not changed and remain 10x.
+
+The saved pages do not include the request query. Official `/v5/position/list` says a `settleCoin` query without `symbol` returns only size greater than zero, but both captured rows have size 0. Before treating pagination as settled, a read-only capture still needs both of these, including every `nextPageCursor`:
+
+```text
+GET /v5/position/list?category=linear&symbol=LINKUSDT
+GET /v5/position/list?category=linear&settleCoin=USDT&limit=200
+```
+
 ## Unresolved wallet risk
 
 UID `211344229` is the same master account whose key was in the XAUT PA process. That process is stopped and its unit is masked; this file does not say the UID is exclusive. The 22:50:24 MYT book was empty, with free USDT 121.50290183 and borrow 0. A later order on this UID can still use that free balance. Super_Trader will then block new entries and will not cancel the other order.
