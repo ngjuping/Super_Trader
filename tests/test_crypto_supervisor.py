@@ -31,7 +31,7 @@ def test_supervisor_refuses_without_opt_in(tmp_path):
 def test_ten_x_supervision_stays_up_without_opening(tmp_path):
     cfg = _config(tmp_path)
     broker = FakeBroker(_snapshot(leverage_by_symbol={
-        "LINKUSDT": 10.0, "AVAXUSDT": 10.0, "SUIUSDT": 10.0,
+        "AVAXUSDT": 10.0, "SUIUSDT": 10.0, "BCHUSDT": 10.0,
     }))
     code = _run(cfg, broker, _market(), loops=2)
     assert code == 0 and broker.created == []
@@ -87,11 +87,11 @@ def test_loss_cutoff_persists_across_loops(tmp_path):
     cfg = _config(tmp_path)
     ledger = Ledger(Path(cfg.ledger_path))
     ledger.realized = -21
-    ledger.qty["LINKUSDT"] = 1.0
-    ledger.avg["LINKUSDT"] = 10.0
-    ledger.tracked.add("LINKUSDT")
+    ledger.qty["AVAXUSDT"] = 1.0
+    ledger.avg["AVAXUSDT"] = 10.0
+    ledger.tracked.add("AVAXUSDT")
     ledger.save()
-    broker = FakeBroker(_snapshot(marks={"LINKUSDT": 10.0, "AVAXUSDT": 8.0, "SUIUSDT": 0.9}))
+    broker = FakeBroker(_snapshot(marks={"AVAXUSDT": 10.0, "SUIUSDT": 0.9, "BCHUSDT": 250.0}))
     assert _run(cfg, broker, _market(), loops=2) == 0
     assert broker.created
     assert all(order.reduce_only for order in broker.created)
@@ -146,7 +146,7 @@ def test_process_sigterm_releases_lock_and_restart_does_not_duplicate(tmp_path):
     config = {
         "live_enabled": True, "category": "linear", "allocation_usdt": 100,
         "loss_cutoff_usdt": 20, "accept_shared_master_uid": True,
-        "symbols": ["LINKUSDT", "AVAXUSDT", "SUIUSDT"], "lookback": 5,
+        "symbols": ["AVAXUSDT", "SUIUSDT", "BCHUSDT"], "lookback": 5,
         "min_history": 5, "min_median_turnover_usdt": 0, "liquidity_window": 3,
         "ledger_path": str(tmp_path / "ledger.json"),
     }
@@ -154,7 +154,7 @@ def test_process_sigterm_releases_lock_and_restart_does_not_duplicate(tmp_path):
     config_path.write_text(json.dumps(config), encoding="utf-8")
     order_log = tmp_path / "orders.json"
     fixture = tmp_path / "fixture.json"
-    fixture.write_text(json.dumps({"order_log": str(order_log), "leverage": 1}), encoding="utf-8")
+    fixture.write_text(json.dumps({"order_log": str(order_log), "leverage": 2}), encoding="utf-8")
     env = os.environ.copy()
     env["SUPER_TRADER_LIVE"] = "1"
     env["SUPER_TRADER_OFFLINE_FIXTURE"] = str(fixture)

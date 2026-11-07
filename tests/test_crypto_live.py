@@ -70,7 +70,7 @@ def _snapshot(**overrides) -> ProtectionSnapshot:
     values = dict(
         positions=[], orders=[], fills=[], funding=[],
         wallet_usdt=121.50290183, free_usdt=121.50290183, borrow_usdt=0.0,
-        leverage_by_symbol={symbol: 1.0 for symbol in FROZEN_UNIVERSE},
+        leverage_by_symbol={symbol: 2.0 for symbol in FROZEN_UNIVERSE},
         position_mode_by_symbol={symbol: 0 for symbol in FROZEN_UNIVERSE},
         instruments=snapshot_instruments(), marks=marks, pages_complete=True,
         categories_checked=("linear:USDT", "linear:USDC", "inverse", "option", "spot"),
@@ -83,9 +83,9 @@ def _market(n=12, now_offset=DAY_MS + 60_000):
     index = pd.date_range("2024-01-01", periods=n, freq="D", tz="UTC")
     steps = np.arange(n)
     close = pd.DataFrame({
-        "LINKUSDT": 10 * (1.01 ** steps),
-        "AVAXUSDT": np.full(n, 8.0),
-        "SUIUSDT": 1 * (0.99 ** steps),
+        "AVAXUSDT": 8 * (1.01 ** steps),
+        "SUIUSDT": np.full(n, 0.85),
+        "BCHUSDT": 250 * (0.99 ** steps),
     }, index=index)
     turnover = pd.DataFrame(5_000_000.0, index=index, columns=close.columns)
     now = int(index[-1].timestamp() * 1000) + now_offset
@@ -102,18 +102,19 @@ def test_forbidden_underlyings_cover_every_quoted_contract():
         LiveConfig(True, True, True, ("BTCUSDT", "AVAXUSDT", "SUIUSDT"), 5, 5, 0, 3, "x")
 
 
-def test_budget_ignores_wallet_and_exchange_leverage():
-    assert opening_budget(100, 121.50290183, 1) == 100
-    assert opening_budget(150, 500, 1) == 100
-    assert opening_budget(90, 121.5, 1) == 90
-    assert opening_budget(100, 40, 1) == 40
+def test_budget_ignores_wallet_and_does_not_multiply_by_exchange_leverage():
+    assert opening_budget(100, 121.50290183, 2) == 100
+    assert opening_budget(150, 500, 2) == 100
+    assert opening_budget(90, 121.5, 2) == 90
+    assert opening_budget(100, 40, 2) == 40
+    assert opening_budget(100, 121.5, 1) == 0
     assert opening_budget(100, 121.5, 10) == 0
-    assert opening_budget(100, None, 1) == 0
+    assert opening_budget(100, None, 2) == 0
 
 
 def test_snapshot_pair_fits_under_100_and_respects_steps():
     basket = plan_basket(
-        ["LINKUSDT", "AVAXUSDT", "SUIUSDT"], budget=100,
+        ["AVAXUSDT", "SUIUSDT", "BCHUSDT"], budget=100,
         marks=snapshot_marks(), instruments=snapshot_instruments(), blocked=set(),
     )
     assert basket is not None
@@ -122,12 +123,12 @@ def test_snapshot_pair_fits_under_100_and_respects_steps():
     gross = sum(leg["notional"] for leg in basket)
     assert gross <= 100
     assert all(leg["notional"] >= 5 for leg in basket)
-    link = basket[0]
-    sui = basket[1]
-    assert link["symbol"] == "LINKUSDT" and link["qty"] == pytest.approx(4.5)
-    assert sui["symbol"] == "SUIUSDT" and sui["qty"] == pytest.approx(50)
+    avax, bch = basket
+    assert avax["symbol"] == "AVAXUSDT" and avax["qty"] == pytest.approx(6.0)
+    assert bch["symbol"] == "BCHUSDT" and bch["qty"] == pytest.approx(0.19)
+    assert gross == pytest.approx(98.2432, abs=1e-4)
     tiny = plan_basket(
-        ["LINKUSDT", "AVAXUSDT", "SUIUSDT"], budget=9,
+        ["AVAXUSDT", "SUIUSDT", "BCHUSDT"], budget=9,
         marks=snapshot_marks(), instruments=snapshot_instruments(), blocked=set(),
     )
     assert tiny is None
@@ -141,6 +142,24 @@ def test_conflicting_link_leverage_rows_do_not_open(tmp_path):
     leverage.update({"AVAXUSDT": 10.0, "SUIUSDT": 10.0})
     modes.update({"AVAXUSDT": 0, "SUIUSDT": 0})
     broker = FakeBroker(_snapshot(leverage_by_symbol=leverage, position_mode_by_symbol=modes))
+    result = run_cycle(_config(tmp_path), Ledger(tmp_path / "ledger.json"), broker, _market(), 0)
+    assert broker.created == []
+    assert any("leverage" in item for item in result["blockers"])
+
+
+def test_only_exact_2x_opens_and_1x_or_10x_does_not(tmp_path):
+    from super_trader.crypto_live import leverage_is_one, leverage_matches
+
+    one = _snapshot(leverage_by_symbol={symbol: 1.0 for symbol in FROZEN_UNIVERSE})
+    two = _snapshot()
+    ten = _snapshot(leverage_by_symbol={symbol: 10.0 for symbol in FROZEN_UNIVERSE})
+    almost = _snapshot(leverage_by_symbol={symbol: 2.001 for symbol in FROZEN_UNIVERSE})
+    assert leverage_is_one(one, FROZEN_UNIVERSE) is True
+    assert leverage_matches(one, FROZEN_UNIVERSE, 2.0) is False
+    assert leverage_matches(two, FROZEN_UNIVERSE, 2.0) is True
+    assert leverage_matches(ten, FROZEN_UNIVERSE, 2.0) is False
+    assert leverage_matches(almost, FROZEN_UNIVERSE, 2.0) is False
+    broker = FakeBroker(one)
     result = run_cycle(_config(tmp_path), Ledger(tmp_path / "ledger.json"), broker, _market(), 0)
     assert broker.created == []
     assert any("leverage" in item for item in result["blockers"])
@@ -195,18 +214,18 @@ def test_loss_cutoff_persists_and_closes_only_owned_quantity(tmp_path):
     path = tmp_path / "ledger.json"
     ledger = Ledger(path)
     ledger.realized = -21
-    ledger.qty["LINKUSDT"] = 1.0
-    ledger.avg["LINKUSDT"] = 10.0
-    ledger.tracked.add("LINKUSDT")
-    broker = FakeBroker(_snapshot(marks={"LINKUSDT": 10.0, "AVAXUSDT": 8.0, "SUIUSDT": 0.9}))
+    ledger.qty["AVAXUSDT"] = 1.0
+    ledger.avg["AVAXUSDT"] = 10.0
+    ledger.tracked.add("AVAXUSDT")
+    broker = FakeBroker(_snapshot(marks={"AVAXUSDT": 10.0, "SUIUSDT": 0.9, "BCHUSDT": 250.0}))
     result = run_cycle(_config(tmp_path), ledger, broker, _market(), 0)
     assert result["action"] == "halted"
     assert broker.created and broker.created[0].reduce_only and broker.created[0].side == "Sell"
     assert broker.created[0].qty == pytest.approx(1.0)
     assert Ledger.load(path).halted
-    again = FakeBroker(_snapshot(marks={"LINKUSDT": 10.0, "AVAXUSDT": 8.0, "SUIUSDT": 0.9}))
+    again = FakeBroker(_snapshot(marks={"AVAXUSDT": 10.0, "SUIUSDT": 0.9, "BCHUSDT": 250.0}))
     reloaded = Ledger.load(path)
-    reloaded.qty["LINKUSDT"] = 1.0
+    reloaded.qty["AVAXUSDT"] = 1.0
     second = run_cycle(_config(tmp_path), reloaded, again, _market(), 0)
     assert second["action"] == "halted"
     assert all(order.reduce_only for order in again.created)
@@ -215,17 +234,17 @@ def test_loss_cutoff_persists_and_closes_only_owned_quantity(tmp_path):
 def test_mixed_foreign_position_is_not_flattened(tmp_path):
     ledger = Ledger(tmp_path / "ledger.json")
     ledger.realized = -25
-    ledger.qty["LINKUSDT"] = 1.0
-    ledger.avg["LINKUSDT"] = 10.0
-    ledger.tracked.add("LINKUSDT")
-    position = ExchangePosition("LINKUSDT", 5.0, 10.0, 0, 1.0)
+    ledger.qty["BCHUSDT"] = 0.1
+    ledger.avg["BCHUSDT"] = 250.0
+    ledger.tracked.add("BCHUSDT")
+    position = ExchangePosition("BCHUSDT", 0.5, 250.0, 0, 2.0)
     broker = FakeBroker(_snapshot(
-        positions=[position], marks={"LINKUSDT": 10.0, "AVAXUSDT": 8.0, "SUIUSDT": 0.9},
+        positions=[position], marks={"AVAXUSDT": 8.0, "SUIUSDT": 0.9, "BCHUSDT": 250.0},
     ))
     result = run_cycle(_config(tmp_path), ledger, broker, _market(), 0)
     assert result["action"] == "halted"
     assert broker.created == []
-    assert "LINKUSDT" in ledger.halt_incomplete
+    assert "BCHUSDT" in ledger.halt_incomplete
 
 
 def test_ambiguous_submit_reuses_the_same_link_id(tmp_path):
@@ -293,12 +312,12 @@ def test_fees_funding_and_wallet_deposit_are_not_confused(tmp_path):
 
 def test_unhedged_owned_long_is_reduced_without_opening(tmp_path):
     ledger = Ledger(tmp_path / "ledger.json")
-    ledger.qty["LINKUSDT"] = 3.0
-    ledger.avg["LINKUSDT"] = 10.0
-    ledger.tracked.add("LINKUSDT")
-    broker = FakeBroker(_snapshot(marks={"LINKUSDT": 10.0, "AVAXUSDT": 8.0, "SUIUSDT": 0.9}))
+    ledger.qty["AVAXUSDT"] = 4.0
+    ledger.avg["AVAXUSDT"] = 10.0
+    ledger.tracked.add("AVAXUSDT")
+    broker = FakeBroker(_snapshot(marks={"AVAXUSDT": 10.0, "SUIUSDT": 0.9, "BCHUSDT": 250.0}))
     result = run_cycle(_config(tmp_path), ledger, broker, _market(), 0)
-    assert any(order.reduce_only and order.symbol == "LINKUSDT" for order in broker.created)
+    assert any(order.reduce_only and order.symbol == "AVAXUSDT" for order in broker.created)
     assert all(order.reduce_only for order in broker.created)
     assert result["action"] in {"reduced", "monitored", "reducing_before_new_basket"}
 

@@ -194,7 +194,7 @@ def _serve(cfg, broker, market_fn, interval_s: int) -> int:
             time.sleep(min(1.0, max(0.0, end - time.time())))
         return not stop["flag"]
 
-    print("监督进程启动。账户不是独占账户。杠杆不是 1 或存在他人仓单时不开新仓。", flush=True)
+    print("监督进程启动。账户不是独占账户。杠杆不是正好 2 或存在他人仓单时不开新仓。", flush=True)
     return run_supervisor(
         cfg, broker, market_fn, sleep_fn=sleep_fn, now_fn=lambda: int(time.time() * 1000),
         stop_fn=lambda: stop["flag"], interval_s=interval_s,
@@ -551,7 +551,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     live = sub.add_parser(
         "crypto-xs-live",
-        help="Bybit 线性合约横截面实盘。默认只做核验，杠杆不是 1 时不开仓",
+        help="Bybit 线性合约横截面实盘。默认只做核验，杠杆不是正好 2 时不开仓",
     )
     live.add_argument("--config", default="config/crypto_xs_live.example.json")
     live.add_argument("--preflight", action="store_true", help="只打印阻断项，不连接交易所")

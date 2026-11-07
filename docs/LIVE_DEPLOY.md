@@ -33,7 +33,7 @@ The loop waits 60 seconds between passes. Timestamps are UTC. A Bybit linear dai
 
 ## Remaining order gate
 
-LINKUSDT, AVAXUSDT, and SUIUSDT were last read at 10x. This program still refuses new entries until a fresh read shows leverage 1 and `positionIdx` 0. It will not send the leverage change. The symbol-only calls are below. Until that read succeeds, `--supervise` stays up, writes `entries_blocked: true`, and sends no opening order.
+The book is now AVAXUSDT, SUIUSDT, and BCHUSDT. LINKUSDT is out because its correctly encoded pagination still disagreed 1 versus 10. As of 23:36 MYT these three, plus BNB, LTC, and TRX, each had one complete page at leverage 10, position index 0, and a flat size. None of them is 2 yet. New entries stay off until a fresh full pagination shows exactly 2 on each of the three book symbols and `positionIdx` 0. 1, 10, 2.001, or two disagreeing rows do not pass. This program will not send the leverage change, and it will not turn a 2x exchange setting into 200 USDT of gross exposure.
 
 A later full pagination of LINKUSDT contained two rows for position index 0: one `Normal` row with leverage 1 and timestamps, and one later page with leverage 10 and empty status, times, and mark. Bybit documents one slot per `positionIdx` and does not define which duplicate wins. The adapter does not drop either row and does not let the last page replace the first. Unequal leverage on that slot leaves the symbol unknown, so the 1x gate stays closed. AVAX and SUI were not changed and remain 10x.
 
@@ -56,15 +56,15 @@ Isolated margin does not reserve 100 USDT from other strategies. The key cannot 
 
 Every cycle reads positions and orders across linear USDT, linear USDC, inverse, option, and spot, including conditional filters where the API allows them. Any foreign position or order blocks new risk. This program does not cancel or adopt it. That still loses the race if another bot uses the free balance after the check.
 
-LINKUSDT, AVAXUSDT, and SUIUSDT were at 10x leverage and one-way mode. Nothing was changed. New entries stay off until each of those symbols shows leverage 1. Setting that leverage is a separate, explicitly authorized operator step. It is not run by this repository.
+AVAXUSDT, SUIUSDT, and BCHUSDT were at 10x and one-way at 23:36 MYT. Nothing was changed. New entries stay off until each of those three shows exactly leverage 2. Setting that leverage is the authorized operator step. It is not run by this repository. LINKUSDT stays out of the book.
 
 ## Frozen universe
 
 Trade only these linear USDT perpetuals:
 
-- LINKUSDT, minimum quantity 0.1, step 0.1, minimum notional 5
 - AVAXUSDT, minimum quantity 0.1, step 0.1, minimum notional 5
 - SUIUSDT, minimum quantity 10, step 10, minimum notional 5
+- BCHUSDT, minimum quantity 0.01, step 0.01, minimum notional 5
 
 The read-only check saw 365 daily rows and a possibly incomplete current candle. The runner drops a daily bar until its UTC close time has passed.
 
@@ -72,16 +72,16 @@ Forbidden underlyings, taken from the existing bot configs and kept even if a co
 
 The basket is one long and one short. Gross notional cannot exceed the virtual budget. If quantity steps cannot form that pair without crossing the cap or leaving more than 10 USDT of imbalance, the cycle sends nothing.
 
-## Symbol-only 1x leverage, not a global change
+## Symbol-only 2x leverage, not a global change
 
-Do not run this from the cloud agent. Do not call account-mode, margin-mode, or leverage endpoints from `crypto-xs-live`. After a separate authorization, an operator can set only these three symbols, one call each:
+Do not run this from the cloud agent. Do not call account-mode, margin-mode, or leverage endpoints from `crypto-xs-live`. The owner authorized exchange leverage 2 on the book only. Gross notional stays at most 100 USDT. An operator can set only these three symbols, one call each:
 
 ```json
 POST /v5/position/set-leverage
-{"category":"linear","symbol":"LINKUSDT","buyLeverage":"1","sellLeverage":"1"}
+{"category":"linear","symbol":"AVAXUSDT","buyLeverage":"2","sellLeverage":"2"}
 ```
 
-Repeat with `AVAXUSDT` and `SUIUSDT`. There is no account-wide leverage switch here. Re-read the positions afterward and confirm `leverage` is `1` and `positionIdx` is `0` before enabling entries. This code rejects `/v5/position/set-leverage`, `/v5/order/cancel-all`, and transfer paths if something tries to call them.
+Repeat with `SUIUSDT` and `BCHUSDT`. There is no account-wide leverage switch. Re-read each symbol with the single-encoded cursor until `nextPageCursor` is empty. Every row for `positionIdx` 0 must agree on leverage `2`. This code rejects `/v5/position/set-leverage`, `/v5/order/cancel-all`, and transfer paths if something tries to call them.
 
 ## Loss, ownership, and collateral
 
@@ -89,7 +89,7 @@ Strategy PnL is realized fills, fees, funding attributed to symbols this strateg
 
 `orderLinkId` starts with `cxls`. The intent is written to `data/crypto_xs_live/ledger.json` before the request. A timeout keeps that id and does not invent another one.
 
-Free collateral uses `walletBalance - totalPositionIM - totalOrderIM - locked - bonus`. A blank field is unknown, not zero. Required margin is treated as 1x notional even if the exchange is set to 10x. Borrowed USDT blocks new entries.
+Free collateral uses `walletBalance - totalPositionIM - totalOrderIM - locked - bonus`. A blank field is unknown, not zero. Order notional is capped by the 100 USDT budget and is not multiplied by the exchange leverage of 2. Borrowed USDT blocks new entries.
 
 ## Commands
 

@@ -1,7 +1,7 @@
 """持续监督：UTC 日线收盘后才允许再平衡，两次之间只盯自己的亏损。
 
 这里不放宽开仓条件。没有 live_enabled、SUPER_TRADER_LIVE=1 和
-accept_shared_master_uid 时直接退出。杠杆不是 1、有别人的仓或单、
+accept_shared_master_uid 时直接退出。杠杆不是正好 2、有别人的仓或单、
 或账户读失败时，都不发新的开仓单。
 """
 from __future__ import annotations
@@ -79,9 +79,9 @@ def offline_fixture(path: str | Path):
     index = pd.date_range("2024-01-01", periods=12, freq="D", tz="UTC")
     steps = list(range(12))
     close = pd.DataFrame({
-        "LINKUSDT": [10 * (1.01 ** i) for i in steps],
-        "AVAXUSDT": [8.0] * 12,
-        "SUIUSDT": [1 * (0.99 ** i) for i in steps],
+        "AVAXUSDT": [8 * (1.01 ** i) for i in steps],
+        "SUIUSDT": [0.85] * 12,
+        "BCHUSDT": [250 * (0.99 ** i) for i in steps],
     }, index=index)
     turnover = pd.DataFrame(5_000_000.0, index=index, columns=list(FROZEN_UNIVERSE))
     now_ms = int(index[-1].timestamp() * 1000) + DAY_MS + 60_000
@@ -92,7 +92,7 @@ def offline_fixture(path: str | Path):
         wallet_usdt=float(raw.get("wallet_usdt", 121.50290183)),
         free_usdt=float(raw.get("free_usdt", 121.50290183)),
         borrow_usdt=0.0,
-        leverage_by_symbol={symbol: float(raw.get("leverage", 1)) for symbol in FROZEN_UNIVERSE},
+        leverage_by_symbol={symbol: float(raw.get("leverage", 2)) for symbol in FROZEN_UNIVERSE},
         position_mode_by_symbol={symbol: 0 for symbol in FROZEN_UNIVERSE},
         instruments=snapshot_instruments(),
         marks=marks,
