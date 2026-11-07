@@ -116,6 +116,38 @@ def test_duplicate_position_slot_with_different_leverage_is_not_chosen():
     assert leverage_is_one(Snap(), ("LINKUSDT",)) is False
 
 
+def test_post_2x_pages_for_avax_sui_bch_stay_unknown():
+    """23:38:31 MYT：set-leverage retCode 0 之后，正确单次编码的第二页仍是 10。"""
+    rows = []
+    for symbol, stamp in (
+        ("AVAXUSDT", "1794065910940"),
+        ("SUIUSDT", "1794065910962"),
+        ("BCHUSDT", "1794065910982"),
+    ):
+        rows.append({
+            "symbol": symbol, "positionIdx": 0, "size": "0", "side": "",
+            "leverage": "2", "positionStatus": "Normal",
+            "createdTime": stamp, "updatedTime": stamp, "markPrice": "1",
+        })
+        rows.append({
+            "symbol": symbol, "positionIdx": 0, "size": "0", "side": "",
+            "leverage": "10", "positionStatus": "",
+            "createdTime": "", "updatedTime": "", "markPrice": "",
+        })
+    from super_trader.bybit_private import fold_position_rows
+    from super_trader.crypto_live import FROZEN_UNIVERSE, leverage_matches
+
+    leverage, modes = fold_position_rows(rows)
+    assert leverage == {}
+    assert modes == {symbol: 0 for symbol in ("AVAXUSDT", "SUIUSDT", "BCHUSDT")}
+
+    class Snap:
+        leverage_by_symbol = leverage
+        position_mode_by_symbol = modes
+
+    assert leverage_matches(Snap(), FROZEN_UNIVERSE, 2.0) is False
+
+
 def test_agreeing_duplicate_rows_keep_the_shared_leverage():
     from super_trader.bybit_private import fold_position_rows
 

@@ -33,20 +33,13 @@ The loop waits 60 seconds between passes. Timestamps are UTC. A Bybit linear dai
 
 ## Remaining order gate
 
-The book is now AVAXUSDT, SUIUSDT, and BCHUSDT. LINKUSDT is out because its correctly encoded pagination still disagreed 1 versus 10. As of 23:36 MYT these three, plus BNB, LTC, and TRX, each had one complete page at leverage 10, position index 0, and a flat size. None of them is 2 yet. New entries stay off until a fresh full pagination shows exactly 2 on each of the three book symbols and `positionIdx` 0. 1, 10, 2.001, or two disagreeing rows do not pass. This program will not send the leverage change, and it will not turn a 2x exchange setting into 200 USDT of gross exposure.
+The book is AVAXUSDT, SUIUSDT, and BCHUSDT. At 23:38:31 MYT `set-leverage` returned `retCode 0` for those three with buy and sell leverage 2. The single-encoded cursor read (`%2C`, not `%252C`) still returned two rows for position index 0 on each symbol: a `Normal` row at leverage 2, then a row at leverage 10 with empty status, times, and mark. Replacing LINK did not remove the conflict. Cursors were `AVAXUSDT%2C1794065910940%2C0`, `SUIUSDT%2C1794065910962%2C0`, and `BCHUSDT%2C1794065910982%2C0`. New entries stay off. 1, 10, 2.001, or two disagreeing rows do not pass. This program will not resend leverage, will not drop the empty row, and will not turn exchange leverage 2 into 200 USDT of gross exposure.
 
 A later full pagination of LINKUSDT contained two rows for position index 0: one `Normal` row with leverage 1 and timestamps, and one later page with leverage 10 and empty status, times, and mark. Bybit documents one slot per `positionIdx` and does not define which duplicate wins. The adapter does not drop either row and does not let the last page replace the first. Unequal leverage on that slot leaves the symbol unknown, so the 1x gate stays closed. AVAX and SUI were not changed and remain 10x.
 
 The 23:13:17 MYT capture shows why those two rows are not yet a settled conflict. Page 1 returned `nextPageCursor=LINKUSDT%2C1794063867198%2C0`. Page 2 was sent as `cursor=LINKUSDT%252C1794063867198%252C0` because `urllib.parse.urlencode` encoded the `%` again. Official pybit copies that cursor into the query string without a second encoding, and the signature is over that same string. This client now does that. The `settleCoin=USDT&limit=200` call returned an empty list, which matches the documented non-zero-size filter and does not decide LINK's leverage.
 
-Repeat this read-only pair. The second URL must contain `%2C`, not `%252C`:
-
-```text
-GET /v5/position/list?category=linear&symbol=LINKUSDT
-GET /v5/position/list?category=linear&cursor=LINKUSDT%2C1794063867198%2C0&symbol=LINKUSDT
-```
-
-If that full result still has two different leverages for position index 0, the 1x gate stays closed. This package does not drop either of the already captured rows to force a pass.
+That single-encoded read was repeated at 23:18:22 MYT for LINK and at 23:38:31 MYT for AVAX, SUI, and BCH. Each still returned leverage 2 or 1 on the `Normal` row and leverage 10 on the empty-status row. Public docs do not choose between them. Do not repeat those cursor queries as a fix, and do not swap symbols to get around them. A Bybit support answer would need both raw pages, the exact URLs, and which field is authoritative. This repository does not send that request.
 
 ## Unresolved wallet risk
 
