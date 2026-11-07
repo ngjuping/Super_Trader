@@ -1,10 +1,33 @@
 # Bybit linear cross-section: live handoff
 
-This build does not place orders, change leverage, transfer funds, or deploy a service. The cloud environment did not call the account. Facts below are the sanitized read-only preflight from the approved host at 2026-11-07 22:10 MYT.
+Cloud does not place orders, change leverage, transfer funds, or start the service. Host start is `crypto-xs-live --supervise` after the gates below. This is not an exclusive-account claim.
 
-## Unresolved isolation blocker
+## Owner acceptance, 2026-11-07 22:48
 
-UID `211344229` is a mainnet master UTA2 account in `ISOLATED_MARGIN`. At the snapshot it had no positions and no ordinary or conditional orders, with 121.50290183 USDT free. That does not make the account dedicated. Other bots' keys were not compared with this UID, and an empty book can change later.
+The owner accepted a software 100 USDT budget on UID `211344229` and does not require physical segregation. XAUT PA and mm-shadow@bybit were disabled and masked at 22:49:47 MYT (inactive, PID 0). A 22:50:24 MYT read showed that UID flat, pagination complete, free USDT 121.50290183, borrow 0. Those facts do not reserve 100 USDT and do not make the account exclusive.
+
+`accept_shared_master_uid: true` records that acceptance. It is not a certificate that no other key can trade this UID. Foreign positions and orders still block new entries and are not cancelled. Copy `config/crypto_xs_live.accepted-budget.json` to `/etc/super-trader/crypto_xs_live.json`. Put `SUPER_TRADER_LIVE=1` and the credential file paths, not the secrets, in `/etc/super-trader/crypto-xs.env`.
+
+## Supported process
+
+`deploy/crypto-xs-supervisor.service` is the start and stop path. It runs `--supervise`. Do not enable the old refused one-shot unit; that unit cannot supervise.
+
+```sh
+sudo systemctl enable --now crypto-xs-supervisor.service
+sudo systemctl stop crypto-xs-supervisor.service
+```
+
+Exit 2 means the three opt-in switches are absent or the ledger lock is held. systemd does not restart exit 2. Exit 1 means three account reads or cycle errors in a row; the process has stopped opening. Exit 0 is a clean SIGTERM.
+
+The loop waits 60 seconds between passes. Timestamps are UTC. A Bybit linear daily bar opens at 00:00 UTC and is usable only after the next 00:00 UTC; the forming bar is dropped. `--supervise` submits a basket only for a new closed bar. Between bars it only checks this strategy's own PnL. A loss of 20 USDT cancels this strategy's orders, reduce-only closes only its quantity, and the halt stays in the ledger across restarts. `--monitor` remains a single stale pass and does not force a daily order.
+
+## Remaining order gate
+
+LINKUSDT, AVAXUSDT, and SUIUSDT were last read at 10x. This program still refuses new entries until a fresh read shows leverage 1 and `positionIdx` 0. It will not send the leverage change. The symbol-only calls are below. Until that read succeeds, `--supervise` stays up, writes `entries_blocked: true`, and sends no opening order.
+
+## Unresolved wallet risk
+
+UID `211344229` is the same master account whose key was in the XAUT PA process. That process is stopped and its unit is masked; this file does not say the UID is exclusive. The 22:50:24 MYT book was empty, with free USDT 121.50290183 and borrow 0. A later order on this UID can still use that free balance. Super_Trader will then block new entries and will not cancel the other order.
 
 Isolated margin does not reserve 100 USDT from other strategies. The key cannot transfer or withdraw, so this program cannot move 100 USDT into a subaccount. The 100 USDT figure is only a virtual budget: orders are sized from `min(100, strategy equity, free USDT)`, never from the 121.50 wallet and never multiplied by the exchange leverage.
 

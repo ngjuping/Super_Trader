@@ -1,0 +1,13 @@
+{
+  "live_enabled": true,
+  "category": "linear",
+  "allocation_usdt": 100,
+  "loss_cutoff_usdt": 20,
+  "accept_shared_master_uid": true,
+  "symbols": ["LINKUSDT", "AVAXUSDT", "SUIUSDT"],
+  "lookback": 20,
+  "min_history": 60,
+  "min_median_turnover_usdt": 1000000,
+  "liquidity_window": 20,
+  "ledger_path": "data/crypto_xs_live/ledger.json"
+}
