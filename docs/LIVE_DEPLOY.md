@@ -6,11 +6,21 @@ Cloud does not place orders, change leverage, transfer funds, or start the servi
 
 The owner accepted a software 100 USDT budget on UID `211344229` and does not require physical segregation. XAUT PA and mm-shadow@bybit were disabled and masked at 22:49:47 MYT (inactive, PID 0). A 22:50:24 MYT read showed that UID flat, pagination complete, free USDT 121.50290183, borrow 0. Those facts do not reserve 100 USDT and do not make the account exclusive.
 
-`accept_shared_master_uid: true` records that acceptance. It is not a certificate that no other key can trade this UID. Foreign positions and orders still block new entries and are not cancelled. Copy `config/crypto_xs_live.accepted-budget.json` to `/etc/super-trader/crypto_xs_live.json`. Put `SUPER_TRADER_LIVE=1` and the credential file paths, not the secrets, in `/etc/super-trader/crypto-xs.env`.
+`accept_shared_master_uid: true` records that acceptance. It is not a certificate that no other key can trade this UID. Foreign positions and orders still block new entries and are not cancelled. Copy `config/crypto_xs_live.accepted-budget.json` to `/etc/super-trader/crypto_xs_live.json`. Put `SUPER_TRADER_LIVE=1` and the credential file paths, not the secrets, in `/etc/super-trader/crypto-xs.env`. Do not set `SUPER_TRADER_OFFLINE_FIXTURE` there; that variable is only for the process test and never reaches Bybit.
 
 ## Supported process
 
-`deploy/crypto-xs-supervisor.service` is the start and stop path. It runs `--supervise`. Do not enable the old refused one-shot unit; that unit cannot supervise.
+The pt host has `python3` and does not have `/usr/bin/python`. The unit therefore starts `/opt/super-trader/.venv/bin/python`, created from `python3`:
+
+```sh
+sudo mkdir -p /opt/super-trader
+sudo rsync -a ./ /opt/super-trader/
+sudo sh deploy/install-supervisor-venv.sh /opt/super-trader
+test -x /opt/super-trader/.venv/bin/python
+/opt/super-trader/.venv/bin/python -m super_trader crypto-xs-live --config /etc/super-trader/crypto_xs_live.json --preflight
+```
+
+`deploy/crypto-xs-supervisor.service` is the start and stop path. Its `ExecStart` is that venv interpreter. Do not point it at `/usr/bin/python`. Do not enable the old refused one-shot unit; that unit cannot supervise.
 
 ```sh
 sudo systemctl enable --now crypto-xs-supervisor.service

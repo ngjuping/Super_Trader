@@ -10,7 +10,11 @@ import fcntl
 import json
 from pathlib import Path
 
-from .crypto_live import Ledger, MarketView, run_cycle
+from .bybit_public import DAY_MS
+from .crypto_live import (
+    FROZEN_UNIVERSE, Ledger, MarketView, ProtectionSnapshot, closed_daily_view,
+    run_cycle, snapshot_instruments,
+)
 
 DEFAULT_INTERVAL_S = 60
 DEFAULT_MAX_FAILURES = 3
@@ -63,6 +67,61 @@ def _failed(result: dict) -> bool:
         return False
     text = " ".join(result.get("blockers") or [])
     return "account read failed" in text or "pagination incomplete" in text
+
+
+def offline_fixture(path: str | Path):
+    """测试用离线账户。不读密钥，不访问交易所。正式 unit 不得设置这个入口。"""
+    import pandas as pd
+
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    if raw.get("network") or raw.get("api_key") or raw.get("api_secret"):
+        raise ValueError("离线夹具不能携带密钥或网络开关")
+    index = pd.date_range("2024-01-01", periods=12, freq="D", tz="UTC")
+    steps = list(range(12))
+    close = pd.DataFrame({
+        "LINKUSDT": [10 * (1.01 ** i) for i in steps],
+        "AVAXUSDT": [8.0] * 12,
+        "SUIUSDT": [1 * (0.99 ** i) for i in steps],
+    }, index=index)
+    turnover = pd.DataFrame(5_000_000.0, index=index, columns=list(FROZEN_UNIVERSE))
+    now_ms = int(index[-1].timestamp() * 1000) + DAY_MS + 60_000
+    market = closed_daily_view(close, turnover, now_ms)
+    marks = {symbol: float(close[symbol].iloc[-1]) for symbol in FROZEN_UNIVERSE}
+    snapshot = ProtectionSnapshot(
+        positions=[], orders=[], fills=[], funding=[],
+        wallet_usdt=float(raw.get("wallet_usdt", 121.50290183)),
+        free_usdt=float(raw.get("free_usdt", 121.50290183)),
+        borrow_usdt=0.0,
+        leverage_by_symbol={symbol: float(raw.get("leverage", 1)) for symbol in FROZEN_UNIVERSE},
+        position_mode_by_symbol={symbol: 0 for symbol in FROZEN_UNIVERSE},
+        instruments=snapshot_instruments(),
+        marks=marks,
+        pages_complete=True,
+        categories_checked=("linear:USDT", "linear:USDC", "inverse", "option", "spot"),
+    )
+    order_log = Path(raw["order_log"])
+
+    class OfflineBroker:
+        def fetch_protection(self):
+            return snapshot
+
+        def create(self, order):
+            rows = []
+            if order_log.exists():
+                rows = json.loads(order_log.read_text(encoding="utf-8"))
+            rows.append({
+                "link_id": order.link_id, "symbol": order.symbol, "side": order.side,
+                "qty": order.qty, "reduce_only": order.reduce_only,
+            })
+            order_log.write_text(json.dumps(rows), encoding="utf-8")
+
+        def cancel(self, _link_id, _symbol):
+            return None
+
+        def find_order(self, _link_id):
+            return None
+
+    return OfflineBroker(), (lambda: market)
 
 
 def run_supervisor(cfg, broker, market_fn, *, sleep_fn, now_fn, stop_fn=None,

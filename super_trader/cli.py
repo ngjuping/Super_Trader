@@ -172,14 +172,11 @@ def cmd_ranking(args) -> int:
     return 0
 
 
-def _supervise(cfg, client, interval_s: int) -> int:
+def _serve(cfg, broker, market_fn, interval_s: int) -> int:
     import signal
     import time
 
-    from .bybit_public import bars_to_frame, default_getter, fetch_klines
-    from .crypto_live import FROZEN_UNIVERSE, MarketView, closed_daily_view
     from .crypto_supervisor import run_supervisor
-    from .crypto_xs import prepare_panels
 
     stop = {"flag": False}
 
@@ -188,6 +185,28 @@ def _supervise(cfg, client, interval_s: int) -> int:
 
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
+
+    def sleep_fn(seconds: int) -> bool:
+        end = time.time() + seconds
+        while time.time() < end:
+            if stop["flag"]:
+                return False
+            time.sleep(min(1.0, max(0.0, end - time.time())))
+        return not stop["flag"]
+
+    print("监督进程启动。账户不是独占账户。杠杆不是 1 或存在他人仓单时不开新仓。", flush=True)
+    return run_supervisor(
+        cfg, broker, market_fn, sleep_fn=sleep_fn, now_fn=lambda: int(time.time() * 1000),
+        stop_fn=lambda: stop["flag"], interval_s=interval_s,
+    )
+
+
+def _supervise(cfg, client, interval_s: int) -> int:
+    import time
+
+    from .bybit_public import bars_to_frame, default_getter, fetch_klines
+    from .crypto_live import FROZEN_UNIVERSE, MarketView, closed_daily_view
+    from .crypto_xs import prepare_panels
 
     def market_fn():
         now_ms = int(time.time() * 1000)
@@ -202,19 +221,7 @@ def _supervise(cfg, client, interval_s: int) -> int:
         except Exception:
             return MarketView(0, True)
 
-    def sleep_fn(seconds: int) -> bool:
-        end = time.time() + seconds
-        while time.time() < end:
-            if stop["flag"]:
-                return False
-            time.sleep(min(1.0, end - time.time()))
-        return not stop["flag"]
-
-    print("监督进程启动。账户不是独占账户。杠杆不是 1 或存在他人仓单时不开新仓。", flush=True)
-    return run_supervisor(
-        cfg, client, market_fn, sleep_fn=sleep_fn, now_fn=lambda: int(time.time() * 1000),
-        stop_fn=lambda: stop["flag"], interval_s=interval_s,
-    )
+    return _serve(cfg, client, market_fn, interval_s)
 
 
 def cmd_crypto_xs_live(args) -> int:
@@ -245,6 +252,14 @@ def cmd_crypto_xs_live(args) -> int:
         print(json.dumps(report, ensure_ascii=False, indent=2))
         print("开仓条件没有满足，未连接私有交易接口。", file=sys.stderr)
         return 2
+    fixture = os.environ.get("SUPER_TRADER_OFFLINE_FIXTURE", "").strip()
+    if fixture:
+        if not args.supervise:
+            print("离线夹具只能用于 --supervise 进程测试", file=sys.stderr)
+            return 2
+        from .crypto_supervisor import offline_fixture
+        broker, market_fn = offline_fixture(fixture)
+        return _serve(cfg, broker, market_fn, args.interval)
     try:
         credentials = load_credentials(os.environ)
     except Exception as exc:

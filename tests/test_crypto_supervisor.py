@@ -125,6 +125,102 @@ def test_cycle_exception_fail_closed(tmp_path):
     assert _run(cfg, Broken(), _market(), loops=1, max_failures=1) == 1
 
 
+def test_unit_interpreter_is_the_python3_venv():
+    unit = Path("deploy/crypto-xs-supervisor.service").read_text(encoding="utf-8")
+    script = Path("deploy/install-supervisor-venv.sh").read_text(encoding="utf-8")
+    assert "/usr/bin/python" not in unit
+    assert "ExecStart=/opt/super-trader/.venv/bin/python -m super_trader crypto-xs-live" in unit
+    assert 'ROOT="${1:-/opt/super-trader}"' in script
+    assert "python3 -m venv" in script
+    assert "$ROOT/.venv/bin/python" in script
+    assert "SUPER_TRADER_OFFLINE_FIXTURE" not in unit
+
+
+def test_process_sigterm_releases_lock_and_restart_does_not_duplicate(tmp_path):
+    import os
+    import signal
+    import subprocess
+    import sys
+    import time
+
+    config = {
+        "live_enabled": True, "category": "linear", "allocation_usdt": 100,
+        "loss_cutoff_usdt": 20, "accept_shared_master_uid": True,
+        "symbols": ["LINKUSDT", "AVAXUSDT", "SUIUSDT"], "lookback": 5,
+        "min_history": 5, "min_median_turnover_usdt": 0, "liquidity_window": 3,
+        "ledger_path": str(tmp_path / "ledger.json"),
+    }
+    config_path = tmp_path / "live.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    order_log = tmp_path / "orders.json"
+    fixture = tmp_path / "fixture.json"
+    fixture.write_text(json.dumps({"order_log": str(order_log), "leverage": 1}), encoding="utf-8")
+    env = os.environ.copy()
+    env["SUPER_TRADER_LIVE"] = "1"
+    env["SUPER_TRADER_OFFLINE_FIXTURE"] = str(fixture)
+    for name in ("BYBIT_API_KEY", "BYBIT_API_SECRET", "BYBIT_API_KEY_FILE", "BYBIT_API_SECRET_FILE"):
+        env.pop(name, None)
+    cmd = [
+        sys.executable, "-m", "super_trader", "crypto-xs-live", "--supervise",
+        "--config", str(config_path), "--interval", "30",
+    ]
+
+    def start():
+        return subprocess.Popen(
+            cmd, cwd=str(Path(__file__).resolve().parents[1]), env=env,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        )
+
+    def wait_status(proc):
+        status = tmp_path / "status.json"
+        deadline = time.time() + 20
+        while time.time() < deadline and not status.exists():
+            if proc.poll() is not None:
+                out, err = proc.communicate()
+                raise AssertionError(f"child exited {proc.returncode}\n{out}\n{err}")
+            time.sleep(0.05)
+        assert status.exists()
+
+    def stop(proc):
+        if proc.poll() is None:
+            proc.send_signal(signal.SIGTERM)
+        code = proc.wait(timeout=10)
+        if code != 0:
+            err = proc.stderr.read() if proc.stderr else ""
+            raise AssertionError(f"SIGTERM exit {code}\n{err}")
+        return code
+
+    first = start()
+    try:
+        wait_status(first)
+        rival = subprocess.run(cmd, cwd=str(Path(__file__).resolve().parents[1]), env=env,
+                               capture_output=True, text=True, timeout=20)
+        assert rival.returncode == 2
+        assert stop(first) == 0
+    finally:
+        if first.poll() is None:
+            first.kill()
+            first.wait(timeout=5)
+
+    probe = LedgerLock(tmp_path / "ledger.lock")
+    probe.acquire()
+    probe.release()
+    created = json.loads(order_log.read_text(encoding="utf-8"))
+    assert len(created) == 2
+    assert {row["side"] for row in created} == {"Buy", "Sell"}
+    (tmp_path / "status.json").unlink()
+
+    second = start()
+    try:
+        wait_status(second)
+        assert stop(second) == 0
+    finally:
+        if second.poll() is None:
+            second.kill()
+            second.wait(timeout=5)
+    assert json.loads(order_log.read_text(encoding="utf-8")) == created
+
+
 def test_cli_supervise_without_opt_in_does_not_touch_network(monkeypatch):
     monkeypatch.setattr(
         "super_trader.bybit_private.urllib.request.urlopen",
