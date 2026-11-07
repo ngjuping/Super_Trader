@@ -172,6 +172,70 @@ def cmd_ranking(args) -> int:
     return 0
 
 
+def cmd_crypto_xs_live(args) -> int:
+    """实盘入口。未解锁时只打印阻断项，不创建私有客户端。"""
+    import os
+    import time
+
+    from .bybit_private import BybitPrivateClient, load_credentials, urllib_transport
+    from .bybit_public import BybitPublicError, default_getter, fetch_klines
+    from .crypto_live import (
+        FROZEN_UNIVERSE, Ledger, MarketView, closed_daily_view, load_live_config,
+        readiness, run_cycle,
+    )
+
+    try:
+        cfg = load_live_config(args.config, os.environ)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    report = readiness(cfg)
+    if args.preflight or not (args.once or args.monitor):
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 2 if report["entries_blocked"] else 0
+    if not cfg.entries_opted_in:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        print("开仓条件没有满足，未连接私有交易接口。", file=sys.stderr)
+        return 2
+    try:
+        credentials = load_credentials(os.environ)
+    except Exception as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    client = BybitPrivateClient(
+        credentials, urllib_transport(), lambda: int(time.time() * 1000),
+    )
+    ledger = Ledger.load(cfg.ledger_path)
+    now_ms = int(time.time() * 1000)
+    if args.monitor:
+        market = MarketView(0, True)
+    else:
+        try:
+            getter = default_getter()
+            frames = {}
+            for symbol in FROZEN_UNIVERSE:
+                bars = fetch_klines("linear", symbol, as_of_ms=now_ms, getter=getter)
+                from .bybit_public import bars_to_frame
+                frames[symbol] = bars_to_frame(bars)
+            from .crypto_xs import prepare_panels
+            _open, close, turnover = prepare_panels(frames)
+            market = closed_daily_view(close, turnover, now_ms)
+        except (BybitPublicError, ValueError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+    result = run_cycle(cfg, ledger, client, market, now_ms)
+    public = {
+        "action": result["action"],
+        "blockers": result["blockers"],
+        "pnl": result["pnl"],
+        "budget": result["budget"],
+        "orders": [order.symbol + ":" + order.side for order in result["orders"]],
+        "cancels": len(result["cancels"]),
+    }
+    print(json.dumps(public, ensure_ascii=False, indent=2))
+    return 0 if result["action"] in {"rebalanced", "monitored", "reduced", "no_trade", "halted"} else 2
+
+
 def cmd_crypto_xs(args) -> int:
     """加密货币横截面纸面路径。--live 只打印关闭原因，不会连接私有交易接口。"""
     import json
@@ -190,6 +254,7 @@ def cmd_crypto_xs(args) -> int:
             "leverage": args.confirm_leverage,
             "loss_limit": args.confirm_loss_limit,
         }))
+        print("实盘入口是 crypto-xs-live。纸面这条 --live 不会下单，也不会读取密钥。")
         return 2
 
     pinned_flags = [args.lookback, args.horizon, args.top_k, args.direction]
@@ -418,6 +483,16 @@ def build_parser() -> argparse.ArgumentParser:
     cx.add_argument("--confirm-leverage", action="store_true")
     cx.add_argument("--confirm-loss-limit", action="store_true")
     cx.set_defaults(func=cmd_crypto_xs)
+
+    live = sub.add_parser(
+        "crypto-xs-live",
+        help="Bybit 线性合约横截面实盘。默认只做核验，杠杆不是 1 时不开仓",
+    )
+    live.add_argument("--config", default="config/crypto_xs_live.example.json")
+    live.add_argument("--preflight", action="store_true", help="只打印阻断项，不连接交易所")
+    live.add_argument("--once", action="store_true", help="跑一轮。条件不满足时不会下单")
+    live.add_argument("--monitor", action="store_true", help="只做风险检查，不新开横截面篮子")
+    live.set_defaults(func=cmd_crypto_xs_live)
 
     return p
 
